@@ -5,13 +5,13 @@
 # Last edit: 23
 # R version 4.5.2
 
-# note:
-    
-# packages used:
+# note: LLM was used for code assistance
+
+# assumes:
     
 # does:
     # sets up file paths
-
+    # creates necessary data tables
 
 ########################################################################
 # - 0 Setup
@@ -27,7 +27,7 @@ data <- file.path(
 packages <- c(
      "fst", "lubridate", "dplyr", "sf", "readr", "stringr", "ggplot2", "fixest",
      "did2s", "tmap", "data.table", "haven", "tigris", "RColorBrewer", "Cairo",
-     "maps"
+     "maps", "rnassqs", "arrow", "asserthat"
 )
     
 # check for missing packages 
@@ -39,9 +39,12 @@ if (length(missing)) install.packages(missing)
 # load packages from library
 invisible(lapply(packages, library, character.only = TRUE))
 
+# set nass api
+api_code <- read_lines("../usda_api.txt") # reads in nass api code locally
+nassqs_auth(api_code) # authenticates key
 
 ########################################################################
-# - 1 load data get info
+# - 1 load industry data
 ########################################################################
 
 # create data object 
@@ -92,11 +95,64 @@ tig_lookup <- unique(as.data.table(fips_codes)[,
     ]
 )
 
-# create variable of county names that
+# create variable of county names for major data
 fbr_cnty_lvl <- fbr_cnty_lvl[
     tig_lookup,
     county := i.county,
     on = .(state_fips = state_code, county_fips = county_code)
 ]
 
+# sort for convenience in viewer
+setcolorder(
+    fbr_cnty_lvl,
+    c("state_abb", "state_fips", "county", "county_fips", "year")
+    )
 
+# sort observations by year, state, county, and industry
+setorderv(
+    fbr_cnty_lvl,
+    cols = c("year", "state_fips", "county_fips", "industry_code")
+)
+
+########################################################################
+# - 2 load crop data
+########################################################################
+
+# get parameters for query
+cttn_param <- list(
+    commodity_desc = "COTTON",
+    agg_level_desc = "COUNTY",
+    year = 1990:2025
+)
+
+# get parameters for planted cotton acreage
+plntd_param <- c(
+    cttn_param, list(
+        statisticcat_desc = "AREA PLANTED"
+    )
+)
+
+# pull planted acres data from NASS
+cttn_acrg <- as.data.table(rnassqs::nassqs(acres_param))
+
+# create harvested acres data
+hvstd_param <- c(
+    cttn_param, list(
+        statisticcat_desc = "AREA HARVESTED"
+    )
+)
+
+# pull harvested acres data fromm  NASS
+hvstd_acrg <- as.data.table(rnassqs::nassqs(hvstd_param))
+
+# create parameters list for gins and ginned bales
+gin_param <- c(
+    cttn_param, list(
+        statisticcat_desc = c("ACTIVE GINS", "GINNED BALES")
+    )
+)
+
+# create data table of cotton gins and ginned bales
+gin_counts <- as.data.table(rnassqs::nassqs(gin_param))
+
+# create parameters for 
