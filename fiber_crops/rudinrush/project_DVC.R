@@ -323,6 +323,10 @@ yield_clean <- yield[
 ]
 
 
+
+
+
+
 # craft new dataset with specific variables
 
 # keep unique ones
@@ -397,7 +401,39 @@ test_test <- all_unq[
     ),
 ]
 
-# add
+
+# writ out csv for break time and let others use data
+fwrite(
+    gin_counts,
+    file.path(data,"cotton_data","gin_counts.csv")
+)
+
+fwrite(
+    hvstd_clean,
+    file.path(data,"cotton_data","harvested_acres.csv")
+)
+
+fwrite(
+    plntd_clean,
+    file.path(data,"cotton_data","planted_acres.csv")
+)
+
+fwrite(
+    prod_clean,
+    file.path(data,"cotton_data","bales_produced.csv")
+)
+
+fwrite(
+    sales_clean,
+    file.path(data,"cotton_data","sales.csv")
+)
+
+fwrite(
+    yield_clean,
+    file.path(data,"cotton_data","yield.csv")
+)
+
+
 
 
 # create list of variables to keep
