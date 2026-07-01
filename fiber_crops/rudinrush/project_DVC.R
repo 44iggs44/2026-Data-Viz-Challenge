@@ -13,6 +13,7 @@
     # sets up file paths
     # creates necessary data tables
 
+
 ########################################################################
 # - 0 Setup
 ########################################################################
@@ -27,7 +28,7 @@ data <- file.path(
 packages <- c(
      "fst", "lubridate", "dplyr", "sf", "readr", "stringr", "ggplot2", "fixest",
      "did2s", "tmap", "data.table", "haven", "tigris", "RColorBrewer", "Cairo",
-     "maps", "rnassqs", "arrow", "asserthat"
+     "maps", "rnassqs", "arrow", "assertthat"
 )
     
 # check for missing packages 
@@ -42,6 +43,7 @@ invisible(lapply(packages, library, character.only = TRUE))
 # set nass api
 api_code <- read_lines("../usda_api.txt") # reads in nass api code locally
 nassqs_auth(api_code) # authenticates key
+
 
 ########################################################################
 # - 1 load industry data
@@ -66,8 +68,8 @@ fbr_cnty_lvl <- fib_naics[, # no row operations
     state_fips := str_sub(
         area_fips, # create string of state fips codes
         start = 1, 
-        end = 2
-        ) # select the first two characters
+        end = 2 # select the first two characters
+        ) 
 ][, # no row operations
     county_fips := str_sub( #creates string of county fips codes
         area_fips, # character variable
@@ -91,14 +93,14 @@ fbr_cnty_lvl <- fbr_cnty_lvl[
 
 # create look up for counties
 tig_lookup <- unique(as.data.table(fips_codes)[,
-    .(state_code, county_code, county)
+    .(state_code, county_code, county) # selects specific variables
     ]
 )
 
 # create variable of county names for major data
 fbr_cnty_lvl <- fbr_cnty_lvl[
     tig_lookup,
-    county := i.county,
+    county := i.county, # maps fips code to county 
     on = .(state_fips = state_code, county_fips = county_code)
 ]
 
@@ -118,6 +120,11 @@ setorderv(
 # - 2 load crop data
 ########################################################################
 
+
+########################################################################
+# - 2(a) nass parameter lists
+########################################################################
+
 # get parameters for query
 cttn_param <- list(
     commodity_desc = "COTTON",
@@ -126,52 +133,272 @@ cttn_param <- list(
     year = 1990:2025
 )
 
-# get parameters for planted cotton acreage
-plntd_param <- c(
+# create parameters list for gins and ginned bales
+gin_param <- c(
     cttn_param, list(
-        statisticcat_desc = "AREA PLANTED"
+        statisticcat_desc = "ACTIVE GINS"
     )
 )
 
-# pull planted acres data from NASS
-cttn_acrg <- as.data.table(rnassqs::nassqs(acres_param))
-    # ***obs == 23,965
-
-# create harvested acres data
+# parameters for harvested acres query
 hvstd_param <- c(
     cttn_param, list(
         statisticcat_desc = "AREA HARVESTED"
     )
 )
 
+# get parameters for planted cotton acreage query
+plntd_param <- c(
+    cttn_param, list(
+        statisticcat_desc = "AREA PLANTED"
+    )
+)
+
+# parameters for cotton production query
+prod_param <- c(
+    cttn_param, list(
+        statisticcat_desc = "PRODUCTION",
+        unit_desc = "480 LB BALES"
+    )
+)
+
+# create parameters for yields  query
+yield_param <- c(
+    cttn_param, list(
+        statisticcat_desc = "YIELD",
+        unit_desc = "LB / ACRE"
+    )
+)
+
+# create parameters for sales query
+sales_param <- c(
+    cttn_param, list(
+        statisticcat_desc = "SALES"
+    )
+)
+
+########################################################################
+# - 2(b) download datasets
+########################################################################
+
+# create data table of cotton gins
+gin_counts <- as.data.table(rnassqs::nassqs(gin_param))
+    # *** obs == 4483
+
 # pull harvested acres data fromm  NASS
 hvstd_acrg <- as.data.table(rnassqs::nassqs(hvstd_param))
     # *** obs == 45,817
 
-# # create parameters list for gins and ginned bales
-# gin_param <- c(
-#     cttn_param, list(
-#         statisticcat_desc = c("ACTIVE GINS", "GINNED BALES")
-#     )
-# )
-# 
-# # create data table of cotton gins and ginned bales
-# gin_counts <- as.data.table(rnassqs::nassqs(gin_param))
+# pull planted acres data from NASS
+plntd_acrg <- as.data.table(rnassqs::nassqs(plntd_param))
+    # ***obs == 16,376
 
-# create parameters for yields
-yield_param <- c(
-    cttn_param, list(
-        statisticcat_desc = c("YIELD")
-    )
-)
-        
+# pull production data from nass
+prod_bale <- as.data.table(rnassqs::nassqs(prod_param))
+    # *** obs == 27,468    
+
+# pull sales data from nass
+sales <- as.data.table(rnassqs::nassqs(sales_param))
+    # *** obs == 12,582
+
 # create data table of yields
-cttn_yield <- as.data.table(rnassqs::nassqs(yield_param))
-    # *** obs == 16,771
+yield <- as.data.table(rnassqs::nassqs(yield_param))
+    # *** obs == 16,369
 
-# get only the totals w/ and w/o irrigation
-cttn_acrg <- cttn_acrg[prodn_practice_desc == "ALL PRODUCTION PRACTICES"]
-    # *** obs == 16,376
+
+########################################################################
+# - 3 clean data
+########################################################################
+
+# clean harvested acreage 
+hvstd_clean <- hvstd_acrg[
+    , # no row operations
+    `:=`(
+        pima_acres = fcase(
+            class_desc == "PIMA" & unit_desc == "ACRES", # creates variable of acres of pima per county
+            Value, default = NA
+        ),
+        upland_acres = fcase(
+            class_desc == "UPLAND" & unit_desc == "ACRES", # creates variable of acres of upland per county
+            Value, default = NA
+        ),
+        all_acres = fcase(
+            class_desc == "ALL CLASSES" & unit_desc == "ACRES", # creates variable of acres of all classes per county
+            Value, default = NA
+        ),
+        pima_ops = fcase(
+            class_desc == "PIMA" & unit_desc == "OPERATIONS", # creates variable of operations with pima per county
+            Value, default = NA
+        ),
+        upland_ops = fcase(
+            class_desc == "UPLAND" & unit_desc == "OPERATIONS", # creates variable of ops with upland "
+            Value, default = NA
+        ),
+        all_ops = fcase(
+            class_desc == "ALL CLASSES" & unit_desc == "OPERATIONS", # creates variable of operations of all classes per county
+            Value, default = NA
+        )
+    )
+]
+
+# clean planted area data
+# drop observations that arent year reference
+#plntd_test <- plntd_acrg[reference_period_desc == "YEAR"]
+    # obs == 16376 NOTE: THIS CHANGES NOTHING
+
+# create variables for planted pima acres and planted upland acres
+plntd_clean <- plntd_acrg[
+    , # no row operations
+    `:=`(
+        pima_acres = fcase(
+            class_desc == "PIMA", # value only when pima cotton
+            Value, # populates new variable
+            default = NA # if missing then NA
+        ),
+        upland_acres = fcase(
+            class_desc == "UPLAND", # value only when pima cotton
+            Value, # populates new variable
+            default = NA # if missing then NA
+        )
+    )
+]
+
+# clean bales prdctn data
+# drop observations that aren't year reference
+prod_bale <- prod_bale[reference_period_desc == "YEAR"]
+    # obs == 16365
+
+# create variables for specific number of bales for each category
+prod_clean <- prod_bale[
+    , #no row operations
+    `:=`(
+        pima_bales = fcase(
+            short_desc == "COTTON, PIMA - PRODUCTION, MEASURED IN 480 LB BALES",
+            Value, default = NA
+        ),
+        upland_bales = fcase(
+            short_desc == "COTTON, UPLAND - PRODUCTION, MEASURED IN 480 LB BALES",
+            Value, default = NA
+        ),
+        all_bales = fcase(
+            short_desc == "COTTON - PRODUCTION, MEASURED IN 480 LB BALES",
+            Value, default = NA
+        )
+    )
+]
+
+
+# create variables for sales of cotton seed & lint/operations w/ sales
+sales_clean <- sales[
+    , # no row operations
+    `:=`(
+        sales = fcase(
+            unit_desc == "$", # value only when pima cotton
+            Value, # populates new variable
+            default = NA # if missing then NA
+        ),
+        operations = fcase(
+            unit_desc == "OPERATIONS", # value only when pima cotton
+            Value, # populates new variable
+            default = NA # if missing then NA
+        )
+    )
+]
+
+# create variables for yield
+yield_clean <- yield[
+    , # no row operations
+    `:=`(
+        pima_yield = fcase(
+            class_desc == "PIMA", # value only when pima cotton
+            Value, # populates new variable
+            default = NA # if missing then NA
+        ),
+        upland_yield = fcase(
+            class_desc == "UPLAND", # value only when pima cotton
+            Value, # populates new variable
+            default = NA # if missing then NA
+        )
+    )
+]
+
+
+# craft new dataset with specific variables
+
+# keep unique ones
+all_fips <- fbr_cnty_lvl[
+    , # no row operations
+    .(state_fips, county_fips, year)
+]
+
+all_unq <- unique(all_fips)
+
+# rename variables to match
+setnames(
+    all_unq,
+    old = c("state_fips", "county_fips"),
+    new = c("state_fips_code", "county_code")
+)
+
+
+# test aggregate
+plntd_agg <- plntd_acrg[
+    , 
+    .(
+    pma_plntd_acrs = sum(pima_acres, na.rm = TRUE),
+    uplnd_plntd_acrs = sum(upland_acres, na.rm = TRUE)
+    ), 
+    by = .(state_fips_code, county_code, year)
+]
+
+test_test <- plntd_agg[
+    all_unq,
+    on = .(state_fips_code, county_code, year)
+]
+
+
+dataset_list <- list(all_unq, gin_counts, hvstd_acrg, plntd_acrg, prod_bale, sales, yield)
+
+id_only_list <- lapply(
+    dataset_list,
+    function(df) {
+    setDT(df)
+    df[, .(state_fips_code, county_code, year)]
+    }
+)
+
+master_id <- rbindlist(
+    id_only_list,
+    use.names = TRUE,
+    fill = TRUE
+)
+
+mstr_id <- unique(master_id)
+
+
+# matches nass data
+all_unq$year <- as.character(all_unq$year)
+
+all_unq <- mstr_id
+
+# start adding new variables
+all_unq[
+    gin_counts, # add number of cotton gins from gin data
+    on = .(state_fips_code, county_code, year),
+    gin_count := i.Value
+]
+
+test_test <- all_unq[
+    plntd_acrg,
+    on = .(state_fips_code, county_code, year),
+    `:=`(
+        pma_plntd_acrs = i.pima_acres,
+        uplnd_plntd_acrs = i.upland_acres
+    ),
+]
+
+# add
+
 
 # create list of variables to keep
 keep_vars <- c(
