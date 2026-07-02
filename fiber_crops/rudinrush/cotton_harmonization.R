@@ -196,7 +196,20 @@ bales_clean <- bales[
 #     
 # ]
 
+total_op_lookup <- gin_counts_2[
+    domain_desc == "TOTAL",
+    .(total_operations = max(Value)),
+    by = .(location_id, year)
+]
 
+gin_counts_test <- total_op_lookup[gin_counts, on = .(location_id, year)]
+
+# drop missing totals
+gin_counts_test <- gin_counts_test[!is.na(total_operations)]
+
+gin_test2 <- unique(gin_counts_test, by = c("location_id", "year"))
+
+gin_test2 <- gin_test2[freq_desc == "MONTHLY"]
 ########################################################################
 # - 3(d) plntd data
 ########################################################################
@@ -416,12 +429,16 @@ cotton_clean <- cotton_clean[yield_clean[, .(location_id, year,state_fips_code, 
                              on = .(location_id, year, state_fips_code, asd_code, county_code)]
     ## obs == 53681
 
+cotton_clean_2 <- cotton_clean[gin_test2[, .(location_id, year,state_fips_code, asd_code, county_code, total_operations)],
+                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
+## obs == 53681
+
 target_cols <- c(
     "upland_hvst_acr", "pima_hvst_acr", "upland_bales", "pima_bales",
     "pima_acres", "upland_acres", "sales", "operations",
-    "upland_yield", "pima_yield"
+    "upland_yield", "pima_yield", "total_operations"
 )
 
-cotton_max <- cotton_clean[, lapply(.SD, max, na.rm = TRUE),
+cotton_max_2 <- cotton_clean_2[, lapply(.SD, max, na.rm = TRUE),
                            by = .(location_id, year),
                            .SDcols = target_cols]
