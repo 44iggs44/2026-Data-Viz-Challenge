@@ -213,6 +213,8 @@ yield <- as.data.table(rnassqs::nassqs(yield_param))
 # - 3 clean data
 ########################################################################
 
+if (FALSE) {
+
 # clean harvested acreage 
 hvstd_clean <- hvstd_acrg[
     , # no row operations
@@ -499,6 +501,8 @@ ggplot( pima_data, # data frame for map
         y = "Cotton Acres" 
     )
 
+}
+
 
 ########################################################################
 # - n clean up and save
@@ -508,32 +512,32 @@ ggplot( pima_data, # data frame for map
 # writ out csv for break time and let others use data
 fwrite(
     gin_counts,
-    file.path(data,"cotton_data","gin_counts.csv")
+    file.path(data,"cotton_data","raw","gin_counts.csv")
 )
 
 fwrite(
     hvstd_acrg,
-    file.path(data,"cotton_data","harvested_acres.csv")
+    file.path(data,"cotton_data","raw","harvested_acres.csv")
 )
 
 fwrite(
     plntd_acrg,
-    file.path(data,"cotton_data","planted_acres.csv")
+    file.path(data,"cotton_data", "raw", "planted_acres.csv")
 )
 
 fwrite(
     prod_bale,
-    file.path(data,"cotton_data","bales_produced.csv")
+    file.path(data,"cotton_data","raw","bales_produced.csv")
 )
 
 fwrite(
     sales,
-    file.path(data,"cotton_data","sales.csv")
+    file.path(data,"cotton_data","raw","sales.csv")
 )
 
 fwrite(
     yield,
-    file.path(data,"cotton_data","yield.csv")
+    file.path(data,"cotton_data","raw","yield.csv")
 )
 
 
