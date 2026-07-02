@@ -18,6 +18,9 @@
     # cleans data sets downloaded from project_DVC # nolint: indentation_linter.
     # harmonizes with manufacturing data
 
+# to do:
+    # cotton gins work.
+
 ########################################################################
 # - 0 Setup
 ########################################################################
@@ -436,9 +439,51 @@ cotton_clean_2 <- cotton_clean[gin_test2[, .(location_id, year,state_fips_code, 
 target_cols <- c(
     "upland_hvst_acr", "pima_hvst_acr", "upland_bales", "pima_bales",
     "pima_acres", "upland_acres", "sales", "operations",
-    "upland_yield", "pima_yield", "total_operations"
+    "upland_yield", "pima_yield"
 )
 
-cotton_max_2 <- cotton_clean_2[, lapply(.SD, max, na.rm = TRUE),
-                           by = .(location_id, year),
+cotton_max <- cotton_clean[, lapply(.SD, max, na.rm = TRUE),
+                           by = .(location_id, year, state_fips_code, asd_code, county_code),
                            .SDcols = target_cols]
+
+
+
+########################################################################
+# - n clean up and save
+########################################################################
+
+# writ out csv for break time and let others use data
+# fwrite(
+#     gin_counts,
+#     file.path(data,"cotton_data","refined","gin_counts.csv")
+# )
+
+fwrite(
+    hrvstd_clean,
+    file.path(data,"cotton_data","refined","harvested_acres_clean.csv")
+)
+
+fwrite(
+    plntd_clean,
+    file.path(data,"cotton_data", "refined", "planted_acres_clean.csv")
+)
+
+fwrite(
+    bales,
+    file.path(data,"cotton_data","refined","bales_clean.csv")
+)
+
+fwrite(
+    sales_clean,
+    file.path(data,"cotton_data","refined","sales_clean.csv")
+)
+
+fwrite(
+    yield_clean,
+    file.path(data,"cotton_data","refined","yield_clean.csv")
+)
+
+fwrite(
+    cotton_max,
+    file.path(data,"cotton_data","refined","cotton_harmonized.csv")
+)
