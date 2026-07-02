@@ -2,12 +2,15 @@
 # Created on: 23 June 2026
 # Created by: lirr
 # Edited by: lirr
-# Last edit: 23
+# Last edit: 01 Jul 2026
 # R version 4.5.2
 
-# note: LLM was used for code assistance
+# note: 
+    # LLM was used for code assistance
+    # dataset last downloaded on: 01 July 2026
 
 # assumes:
+    
     
 # does:
     # sets up file paths
@@ -117,7 +120,7 @@ setorderv(
 )
 
 ########################################################################
-# - 2 load crop data
+# - 2 download crop data
 ########################################################################
 
 
@@ -402,36 +405,7 @@ test_test <- all_unq[
 ]
 
 
-# writ out csv for break time and let others use data
-fwrite(
-    gin_counts,
-    file.path(data,"cotton_data","gin_counts.csv")
-)
 
-fwrite(
-    hvstd_clean,
-    file.path(data,"cotton_data","harvested_acres.csv")
-)
-
-fwrite(
-    plntd_clean,
-    file.path(data,"cotton_data","planted_acres.csv")
-)
-
-fwrite(
-    prod_clean,
-    file.path(data,"cotton_data","bales_produced.csv")
-)
-
-fwrite(
-    sales_clean,
-    file.path(data,"cotton_data","sales.csv")
-)
-
-fwrite(
-    yield_clean,
-    file.path(data,"cotton_data","yield.csv")
-)
 
 
 
@@ -524,3 +498,43 @@ ggplot( pima_data, # data frame for map
         x = "Year", 
         y = "Cotton Acres" 
     )
+
+
+########################################################################
+# - n clean up and save
+########################################################################
+
+
+# writ out csv for break time and let others use data
+fwrite(
+    gin_counts,
+    file.path(data,"cotton_data","gin_counts.csv")
+)
+
+fwrite(
+    hvstd_acrg,
+    file.path(data,"cotton_data","harvested_acres.csv")
+)
+
+fwrite(
+    plntd_acrg,
+    file.path(data,"cotton_data","planted_acres.csv")
+)
+
+fwrite(
+    prod_bale,
+    file.path(data,"cotton_data","bales_produced.csv")
+)
+
+fwrite(
+    sales,
+    file.path(data,"cotton_data","sales.csv")
+)
+
+fwrite(
+    yield,
+    file.path(data,"cotton_data","yield.csv")
+)
+
+
+
