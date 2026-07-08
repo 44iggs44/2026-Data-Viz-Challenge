@@ -86,6 +86,21 @@ cotton <- lapply(
     }
 )
 
+# select identifying variables
+loc_vars <- c(
+    "location_id", "state_fips_code", "state_alpha", "asd_code", "asd_desc",
+    "county_code", "county_name"
+)
+
+locations <- cotton |>
+    # Explicitly keep only the columns in loc_vars and drop everything else
+    map(~ select(.x, any_of(loc_vars))) |>
+    bind_rows() |>
+    # Get the unique row combinations of those remaining columns
+    distinct()
+
+
+
 # subset gin counts from cotton
 gin_counts <- cotton[["gin_counts.csv"]]
     # obs == 4483
@@ -280,7 +295,7 @@ hvstd_clean <- full_join(
 
 # merge into cotton df
 cotton_df <- full_join(
-    cotton_df_n,
+    cotton_df,
     hvstd_clean,
     by = join_by(location_id, year)
 )
@@ -303,7 +318,7 @@ sales_clean <- sales |>
 
 # merge with cotton total data
 cotton_df <- full_join(
-    cotton_df_o,
+    cotton_df,
     sales_clean,
     by = join_by(location_id, year)
 )
@@ -344,9 +359,52 @@ yield_clean <- full_join(
 
 # join larger cotton data
 cotton_df <- full_join(
-    cotton_df_p,
+    cotton_df,
     yield_clean,
     by = join_by(location_id, year)
+)
+
+# location including dataset
+cotton_df <- full_join(
+    cotton_df,
+    locations,
+    by = "location_id"
+    ) |>
+    filter(!is.na(year))
+
+
+########################################################################
+# - 4 merge in manufacturing data
+########################################################################
+
+# take cotton dataset and create matching area fips code
+cotton_df <- cotton_df |>
+    mutate(
+        state_fips_code  = str_pad(state_fips_code, width = 2, pad = "0"),
+        county_code = str_pad(county_code, width = 3, pad = "0"),
+        area_fips = paste0(
+            state_fips_code, county_code
+        )
+)
+
+
+# variables to keep
+cotton_merge <- cotton_df |>
+    ungroup() |>
+    group_by(area_fips, year) |>
+    summarise(
+        across(
+            upland_bales:pima_yield, # value columns
+            ~sum(.x, na.rm = TRUE)
+        ),
+        .groups = "drop"
+    )
+
+# merge with naics data on area_fips'
+cotton_mnfctr <- full_join(
+    fib_naics,
+    cotton_merge,
+    by = join_by(area_fips, year)
 )
 
 
@@ -389,6 +447,12 @@ fwrite(
     cotton_df,
     file.path(data,"cotton_data","refined","cotton_harmonized.csv")
 )
+
+fwrite(
+    cotton_mnfctr,
+    file.path(data, "cotton_data", "refined", "cttn_mftr.csv")
+)
+
 
 
 
