@@ -10,7 +10,7 @@
     # dataset last downloaded on: 01 July 2026
 
 # assumes:
-    # you have run projec_DVC # nolint: indentation_linter.
+    # you have run project_DVC # nolint: indentation_linter.
     # files are downloaded to a specific folder path
 
 
@@ -24,7 +24,6 @@
 ########################################################################
 # - 0 Setup
 ########################################################################
-
 
 
 # data file path
@@ -115,19 +114,19 @@ yield <- cotton[["yield.csv"]]
 bales <- bales[!is.na(Value)]
     # obs == 16492
 
-yield_2 <- yield[!is.na(Value)]
+yield <- yield[!is.na(Value)]
     # obs == 16369 no change
 
-sales_2 <- sales[!is.na(Value)]
+sales <- sales[!is.na(Value)]
     # obs == 10258
 
-plntd_2 <- plntd_acrg[!is.na(Value)]
+plntd <- plntd_acrg[!is.na(Value)]
     # obs == 16376 no change
 
-hrvstd_2 <- hrvstd_acrg[!is.na(Value)]
+hrvstd <- hrvstd_acrg[!is.na(Value)]
     # obs == 43414
 
-gin_counts_2 <- gin_counts[!is.na(Value)]
+gin_counts <- gin_counts[!is.na(Value)]
     # obs == 4481
 
 
@@ -135,131 +134,102 @@ gin_counts_2 <- gin_counts[!is.na(Value)]
 # - 3(b) bales data
 ########################################################################
 
-# create list of variables to keep for bales
-keep_vars_bales <- c(
-    "location_id", "year", "upland_bales", "pima_bales", "class_desc", 
-    "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
-    "asd_desc", "county_name"
+# create cotton specific variables
+bales_upland <- bales |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    # select for upland cotton class
+    filter(class_desc == "UPLAND") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select("upland_bales" = Value)
+
+bales_pima <- bales |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    # select for upland cotton class
+    filter(class_desc == "PIMA") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select("pima_bales" = Value)
+
+bales_all <- bales |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    # select for upland cotton class
+    filter(class_desc == "ALL CLASSES") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select("all_bales" = Value) # NOTE: all bales are not measured in year pd
+
+bales_clean <- full_join(
+    bales_upland, # parent 
+    bales_pima, # child
+    by = join_by(location_id, year)
 )
 
+########################################################################
+# - 3(c) gin_counts data
+########################################################################
 
-# create variables specific to the cotton classes
-bales[
-    , # no row operations 
-    upland_bales := ifelse(
-        class_desc == "UPLAND", # selects for the upland class
-        Value, # assigns the value when class_desc is true
-        NA_real_ # Na for doubles
-    )
-][
-    , # no row operations
-    pima_bales := ifelse(
-        class_desc == "PIMA", # selects for Pima cotton
-        Value,
-        NA_real_
-    )
-][
-    , # no row ops
-    all_class_bales := ifelse(
-        class_desc == "ALL CLASSES", #selects for all classes
-        Value,
-        NA_real_
-    )
-]
+# select number of gins by county and year
+gin_clean <- gin_counts |>
+    # group by year and location for id
+    group_by(location_id, year) |>
+    # filter for monthly observations
+    filter(freq_desc == "MONTHLY") |>
+    # drop point in time observations
+    filter(domain_desc == "TOTAL") |>
+    select("active_gins" = Value) # very few obs also short time period unhelpful
 
-# drop observations without the year reference period
-bales <- bales[reference_period_desc == "YEAR"]
-    # obs == 16365
 
-# create full data.table with select variables from bales
-bales_clean <- bales[
-    , # no row operations
-    ..keep_vars_bales
-]
+# join with cleaned bales data
+cotton_df <- full_join(
+    bales_clean,
+    gin_clean,
+    by = join_by(location_id, year)
+)
 
-# ########################################################################
-# # - 3(c) gin_counts data
-# ########################################################################
-# 
-# # create list of variables to keep
-# keep_vars_gins <- c(
-#     "location_id",  "class_desc", 
-#     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
-#     "asd_desc", "county_name"
-# )
-# 
-# # drop values without monthly reference period
-# gin_counts_2 <- gin_counts_2[
-#     freq_desc == "MONTHLY" # drops observations that arent monthly
-# ]
-#     # obs == 3777
-# 
-# # create variables for number of bales
-# gin_test <- gin_counts_2[
-#     
-# ]
-
-total_op_lookup <- gin_counts_2[
-    domain_desc == "TOTAL",
-    .(total_operations = max(Value)),
-    by = .(location_id, year)
-]
-
-gin_counts_test <- total_op_lookup[gin_counts, on = .(location_id, year)]
-
-# drop missing totals
-gin_counts_test <- gin_counts_test[!is.na(total_operations)]
-
-gin_test2 <- unique(gin_counts_test, by = c("location_id", "year"))
-
-gin_test2 <- gin_test2[freq_desc == "MONTHLY"]
 ########################################################################
 # - 3(d) plntd data
 ########################################################################
 
-keep_vars_plntd <- c(
-    "location_id", "year", "upland_acres", "pima_acres", "class_desc", 
-    "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
-    "asd_desc", "county_name"
+# select upland cotton planted acres
+plntd_upland <- plntd_acrg |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    # select for upland cotton class
+    filter(class_desc == "UPLAND") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select(location_id, year, "uplnd_acres_plntd" = Value)
+
+# select pima cotton planted acres
+plntd_pima <- plntd_acrg |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    # select for pima cotton class
+    filter(class_desc == "PIMA") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select(location_id, year, "pima_acres_plntd" = Value)
+
+# create combined clean dataset
+plntd_clean <- full_join(
+    plntd_upland,
+    plntd_pima,
+    by = join_by(location_id, year)
 )
 
-# create variables for pima and upland acres
-plntd_2[
-        , # no row operations 
-        upland_acres := ifelse(
-            class_desc == "UPLAND", # selects for the upland class
-            Value, # assigns the value when class_desc is true
-            NA_real_ # Na for doubles
-        )
-    ][
-        , # no row operations
-        pima_acres := ifelse(
-            class_desc == "PIMA", # selects for Pima cotton
-            Value,
-            NA_real_
-        )
-]
-
-# create clean dataset with plntd dat and specific variables
-plntd_clean <- plntd_2[
-    , # no row operations
-    ..keep_vars_plntd
-]
-
-# keep only unique values
-plntd_clean <- unique(plntd_clean)
-    # obs == 16376
 
 ########################################################################
 # - 3(d) harvested data
 ########################################################################
-
-# keep vars for harvested data
-keep_vars_hrvstd <- c(
-    "location_id", "year", "upland_hvst_acr", "pima_hvst_acr", "all_hvst_acr", 
-    "class_desc", "unit_desc", "state_fips_code", "asd_code", "county_code",
-    "state_alpha", "asd_desc", "county_name"
-)
 
 # drop demographic info
 hrvstd_2 <- hrvstd_2[
@@ -453,10 +423,10 @@ cotton_max <- cotton_clean[, lapply(.SD, max, na.rm = TRUE),
 ########################################################################
 
 # writ out csv for break time and let others use data
-# fwrite(
-#     gin_counts,
-#     file.path(data,"cotton_data","refined","gin_counts.csv")
-# )
+fwrite(
+    gin_counts,
+    file.path(data,"cotton_data","refined","gin_counts.csv")
+)
 
 fwrite(
     hrvstd_clean,
@@ -469,7 +439,7 @@ fwrite(
 )
 
 fwrite(
-    bales,
+    bales_clean,
     file.path(data,"cotton_data","refined","bales_clean.csv")
 )
 
@@ -487,3 +457,148 @@ fwrite(
     cotton_max,
     file.path(data,"cotton_data","refined","cotton_harmonized.csv")
 )
+
+
+
+# END #
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################################################################
+# - CODE GRAVEYARD
+########################################################################
+
+
+# 
+# # create variables specific to the cotton classes
+# bales[
+#     , # no row operations 
+#     upland_bales := ifelse(
+#         class_desc == "UPLAND", # selects for the upland class
+#         Value, # assigns the value when class_desc is true
+#         NA_real_ # Na for doubles
+#     )
+# ][
+#     , # no row operations
+#     pima_bales := ifelse(
+#         class_desc == "PIMA", # selects for Pima cotton
+#         Value,
+#         NA_real_
+#     )
+# ][
+#     , # no row ops
+#     all_class_bales := ifelse(
+#         class_desc == "ALL CLASSES", #selects for all classes
+#         Value,
+#         NA_real_
+#     )
+# ]
+# 
+# # drop observations without the year reference period
+# bales <- bales[reference_period_desc == "YEAR"]
+#     # obs == 16365
+# 
+# # create full data.table with select variables from bales
+# bales_clean <- bales[
+#     , # no row operations
+#     ..keep_vars_bales
+# ]
+
+# 
+# # create list of variables to keep for bales
+# keep_vars_bales <- c(
+#     "location_id", "year", "upland_bales", "pima_bales", "class_desc", 
+#     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
+#     "asd_desc", "county_name"
+# )
+
+# # create list of variables to keep
+# keep_vars_gins <- c(
+#     "location_id",  "class_desc",
+#     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
+#     "asd_desc", "county_name"
+# )
+
+
+# # drop values without monthly reference period
+# gin_counts_2 <- gin_counts_2[
+#     freq_desc == "MONTHLY" # drops observations that arent monthly
+# ]
+#     # obs == 3777
+# 
+# # create variables for number of bales
+# gin_test <- gin_counts_2[
+# 
+# ]
+# 
+# total_op_lookup <- gin_counts_2[
+#     domain_desc == "TOTAL",
+#     .(total_operations = max(Value)),
+#     by = .(location_id, year)
+# ]
+# 
+# gin_counts_test <- total_op_lookup[gin_counts, on = .(location_id, year)]
+# 
+# # drop missing totals
+# gin_counts_test <- gin_counts_test[!is.na(total_operations)]
+# 
+# gin_test2 <- unique(gin_counts_test, by = c("location_id", "year"))
+# 
+# gin_test2 <- gin_test2[freq_desc == "MONTHLY"]]
+
+
+
+# keep_vars_plntd <- c(
+#     "location_id", "year", "upland_acres", "pima_acres", "class_desc", 
+#     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
+#     "asd_desc", "county_name"
+# )
+# 
+# # create variables for pima and upland acres
+# plntd[
+#         , # no row operations 
+#         upland_acres := ifelse(
+#             class_desc == "UPLAND", # selects for the upland class
+#             Value, # assigns the value when class_desc is true
+#             NA_real_ # Na for doubles
+#         )
+#     ][
+#         , # no row operations
+#         pima_acres := ifelse(
+#             class_desc == "PIMA", # selects for Pima cotton
+#             Value,
+#             NA_real_
+#         )
+# ]
+# 
+# # create clean dataset with plntd dat and specific variables
+# plntd_clean <- plntd_2[
+#     , # no row operations
+#     ..keep_vars_plntd
+# ]
+# 
+# # keep only unique values
+# plntd_clean <- unique(plntd_clean)
+#     # obs == 16376
+
+
+# # keep vars for harvested data
+# keep_vars_hrvstd <- c(
+#     "location_id", "year", "upland_hvst_acr", "pima_hvst_acr", "all_hvst_acr", 
+#     "class_desc", "unit_desc", "state_fips_code", "asd_code", "county_code",
+#     "state_alpha", "asd_desc", "county_name"
+# )
+
+
