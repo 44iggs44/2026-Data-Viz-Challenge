@@ -198,7 +198,7 @@ cotton_df <- full_join(
 ########################################################################
 
 # select upland cotton planted acres
-plntd_upland <- plntd_acrg |>
+plntd_upland <- plntd |>
     # year/location_id is level of observation
     group_by(year, location_id) |>
     # select for upland cotton class
@@ -209,7 +209,7 @@ plntd_upland <- plntd_acrg |>
     select(location_id, year, "uplnd_acres_plntd" = Value)
 
 # select pima cotton planted acres
-plntd_pima <- plntd_acrg |>
+plntd_pima <- plntd |>
     # year/location_id is level of observation
     group_by(year, location_id) |>
     # select for pima cotton class
@@ -219,10 +219,17 @@ plntd_pima <- plntd_acrg |>
     # select identifying variables and rename value
     select(location_id, year, "pima_acres_plntd" = Value)
 
-# create combined clean dataset
+# create combined clean dataset of planted acres
 plntd_clean <- full_join(
     plntd_upland,
     plntd_pima,
+    by = join_by(location_id, year)
+)
+
+# add new dataset to cotton_df
+cotton_df <- full_join(
+    cotton_df,
+    plntd_clean,
     by = join_by(location_id, year)
 )
 
@@ -231,191 +238,116 @@ plntd_clean <- full_join(
 # - 3(d) harvested data
 ########################################################################
 
-# drop demographic info
-hrvstd_2 <- hrvstd_2[
-    sector_desc == "CROPS"
-][unit_desc == "ACRES" ]
-    # obs == 21790
+# select for upland cotton hvstd acres
+hvstd_upland <- hrvstd |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    #select totals
+    filter(domain_desc == "TOTAL") |>
+    # select for acres
+    filter(unit_desc == "ACRES") |>
+    # select for upland cotton class
+    filter(class_desc == "UPLAND") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select(location_id, year, "uplnd_acres_hvstd" = Value) |>
+    slice_max(uplnd_acres_hvstd, n = 1, with_ties = FALSE)
 
-# create variables specific to the cotton classes
-hrvstd_2[
-    , # no row operations 
-    upland_hvst_acr := ifelse(
-        class_desc == "UPLAND", # selects for the upland class
-        Value, # assigns the value when class_desc is true
-        NA_real_ # Na for doubles
-    )
-][
-    , # no row operations
-    pima_hvst_acr := ifelse(
-        class_desc == "PIMA", # selects for Pima cotton
-        Value,
-        NA_real_
-    )
-][
-    , # no row ops
-    all_hvst_acr := ifelse(
-        class_desc == "ALL CLASSES", #selects for all classes
-        Value,
-        NA_real_
-    )
-]
+# select for pima cotton hrvstd acres
+hvstd_pima <- hrvstd |>
+    # year/location_id is level of observation
+    group_by(year, location_id) |>
+    #select totals
+    filter(domain_desc == "TOTAL") |>
+    # select for acres
+    filter(unit_desc == "ACRES") |>
+    # select for upland cotton class
+    filter(class_desc == "PIMA") |>
+    # select only annual reference periods
+    filter(reference_period_desc == "YEAR") |>
+    # select identifying variables and rename value
+    select(location_id, year, "pima_acres_hvstd" = Value) |>
+    # keep only the maximum value per year
+    slice_max(pima_acres_hvstd, n = 1, with_ties = FALSE)
 
-# select variables for use
-hrvstd_clean <- hrvstd_2[
-    , # no row ops
-    ..keep_vars_hrvstd
-]
+# join harvested data
+hvstd_clean <- full_join(
+    hvstd_upland,
+    hvstd_pima,
+    by = join_by(location_id, year)
+)
 
-# drop remaining duplicates
-hrvstd_clean <- unique(hrvstd_clean)
-    # obs == 21790
+# merge into cotton df
+cotton_df <- full_join(
+    cotton_df_n,
+    hvstd_clean,
+    by = join_by(location_id, year)
+)
 
 
 ########################################################################
 # - 3(e) sales data
 ########################################################################
 
-# create list of sales variables to keep
-keep_vars_sales <- c(
-    "location_id", "year", "operations", "sales", "class_desc", "unit_desc", 
-    "state_fips_code", "asd_code", "county_code", "state_alpha", "asd_desc", 
-    "county_name"
+# clean sales data
+sales_clean <- sales |>
+    # group by year and lcoation
+    group_by(year, location_id) |>
+    # select only totals
+    filter(domain_desc == "TOTAL") |>
+    # select only $ sales
+    filter(unit_desc == "$") |>
+    # select only key variables
+    select(location_id, year, "sales" = Value)
+
+# merge with cotton total data
+cotton_df <- full_join(
+    cotton_df_o,
+    sales_clean,
+    by = join_by(location_id, year)
 )
-
-# drop demographic data
-sales_2 <- sales_2[
-    sector_desc == "CROPS"
-]
-    # obs == 6622
-
-
-# create variables specific to operations or sales
-sales_2[
-    , # no row operations 
-    sales := ifelse(
-        unit_desc == "$", # selects for the sales 
-        Value, # assigns the value when unit_desc is true
-        NA_real_ # Na for doubles
-    )
-][
-    , # no row operations
-    operations := ifelse(
-        unit_desc == "OPERATIONS", # selects for count of operatiosn
-        Value,
-        NA_real_
-    )
-]
-
-# select variables for use
-sales_clean <- sales_2[
-    , # no row ops
-    ..keep_vars_sales
-]
-
-# drop remaining duplicates
-sales_clean <- unique(sales_clean)
-# obs == 6622
 
 
 ########################################################################
 # - 3(f) yield data
 ########################################################################
 
-# variables to keep
-keep_vars_yield <- c(
-    "location_id", "year", "upland_yield", "pima_yield", "class_desc", 
-    "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
-    "asd_desc", "county_name"
+# select upland yield data
+yield_upland <- yield |>
+    # group by location and year
+    group_by(location_id, year) |>
+    # select for upland cotton
+    filter(class_desc == "UPLAND") |>
+    # select only annual values
+    filter(freq_desc == "ANNUAL") |>
+    # select only key variables
+    select(location_id, year, "upland_yield" = Value)
+
+# select pima yield data
+yield_pima <- yield |>
+    # group by location and year
+    group_by(location_id, year) |>
+    # select for upland cotton
+    filter(class_desc == "PIMA") |>
+    # select only annual values
+    filter(freq_desc == "ANNUAL") |>
+    # select only key variables
+    select(location_id, year, "pima_yield" =  Value)
+
+# join yield data
+yield_clean <- full_join(
+    yield_upland,
+    yield_pima,
+    by = join_by(location_id, year)
 )
 
-# create variables for pima and upland acres
-yield_2[
-    , # no row operations 
-    upland_yield := ifelse(
-        class_desc == "UPLAND", # selects for the upland class
-        Value, # assigns the value when class_desc is true
-        NA_real_ # Na for doubles
-    )
-][
-    , # no row operations
-    pima_yield := ifelse(
-        class_desc == "PIMA", # selects for Pima cotton
-        Value,
-        NA_real_
-    )
-]
-
-# create clean dataset with plntd dat and specific variables
-yield_clean <- yield_2[
-    , # no row operations
-    ..keep_vars_yield
-]
-
-# drop duplicate observations if any
-yield_clean <- unique(yield_2)
-    # obs == 16,369
-
-
-########################################################################
-# - 4 cotton master dataset
-########################################################################
-
-
-location_years <- unique(
-    na.omit(
-        rbindlist(
-            lapply(
-                cotton, 
-                function(dt) {
-                    dt[
-                    , 
-                    .(location_id, year, state_fips_code, asd_code, county_code)
-                    ]
-                }
-            )
-        )
-    )
+# join larger cotton data
+cotton_df <- full_join(
+    cotton_df_p,
+    yield_clean,
+    by = join_by(location_id, year)
 )
-
-
-
-
-cotton_clean <- location_years[hrvstd_clean[, .(location_id, year, state_fips_code, asd_code, county_code, upland_hvst_acr, pima_hvst_acr)],
-                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
-# obs == 21790
-
-# test mega join
-cotton_clean <- cotton_clean[bales_clean[, .(location_id, year, state_fips_code, asd_code, county_code,upland_bales,pima_bales)],
-                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
-    # obs == 21164
-
-cotton_clean <- cotton_clean[plntd_clean[, .(location_id, year, state_fips_code, asd_code, county_code,pima_acres, upland_acres)],
-                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
-    # obs == 355532
-
-cotton_clean <- cotton_clean[sales_clean[, .(location_id, year, state_fips_code, asd_code, county_code,sales, operations)],
-                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
-    # obs == 38866
-
-cotton_clean <- cotton_clean[yield_clean[, .(location_id, year,state_fips_code, asd_code, county_code, upland_yield, pima_yield)],
-                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
-    ## obs == 53681
-
-cotton_clean_2 <- cotton_clean[gin_test2[, .(location_id, year,state_fips_code, asd_code, county_code, total_operations)],
-                             on = .(location_id, year, state_fips_code, asd_code, county_code)]
-## obs == 53681
-
-target_cols <- c(
-    "upland_hvst_acr", "pima_hvst_acr", "upland_bales", "pima_bales",
-    "pima_acres", "upland_acres", "sales", "operations",
-    "upland_yield", "pima_yield"
-)
-
-cotton_max <- cotton_clean[, lapply(.SD, max, na.rm = TRUE),
-                           by = .(location_id, year, state_fips_code, asd_code, county_code),
-                           .SDcols = target_cols]
-
 
 
 ########################################################################
@@ -429,7 +361,7 @@ fwrite(
 )
 
 fwrite(
-    hrvstd_clean,
+    hvstd_clean,
     file.path(data,"cotton_data","refined","harvested_acres_clean.csv")
 )
 
@@ -454,7 +386,7 @@ fwrite(
 )
 
 fwrite(
-    cotton_max,
+    cotton_df,
     file.path(data,"cotton_data","refined","cotton_harmonized.csv")
 )
 
@@ -470,135 +402,81 @@ fwrite(
 
 
 
-
-
-
-
-
-
-########################################################################
-# - CODE GRAVEYARD
-########################################################################
-
-
+# 
+# 
+# 
+# # drop demographic info
+# hrvstd_2 <- hrvstd_2[
+#     sector_desc == "CROPS"
+# ][unit_desc == "ACRES" ]
+#     # obs == 21790
 # 
 # # create variables specific to the cotton classes
-# bales[
+# hrvstd_2[
 #     , # no row operations 
-#     upland_bales := ifelse(
+#     upland_hvst_acr := ifelse(
 #         class_desc == "UPLAND", # selects for the upland class
 #         Value, # assigns the value when class_desc is true
 #         NA_real_ # Na for doubles
 #     )
 # ][
 #     , # no row operations
-#     pima_bales := ifelse(
+#     pima_hvst_acr := ifelse(
 #         class_desc == "PIMA", # selects for Pima cotton
 #         Value,
 #         NA_real_
 #     )
 # ][
 #     , # no row ops
-#     all_class_bales := ifelse(
+#     all_hvst_acr := ifelse(
 #         class_desc == "ALL CLASSES", #selects for all classes
 #         Value,
 #         NA_real_
 #     )
 # ]
 # 
-# # drop observations without the year reference period
-# bales <- bales[reference_period_desc == "YEAR"]
-#     # obs == 16365
-# 
-# # create full data.table with select variables from bales
-# bales_clean <- bales[
-#     , # no row operations
-#     ..keep_vars_bales
-# ]
-
-# 
-# # create list of variables to keep for bales
-# keep_vars_bales <- c(
-#     "location_id", "year", "upland_bales", "pima_bales", "class_desc", 
-#     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
-#     "asd_desc", "county_name"
-# )
-
-# # create list of variables to keep
-# keep_vars_gins <- c(
-#     "location_id",  "class_desc",
-#     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
-#     "asd_desc", "county_name"
-# )
-
-
-# # drop values without monthly reference period
-# gin_counts_2 <- gin_counts_2[
-#     freq_desc == "MONTHLY" # drops observations that arent monthly
-# ]
-#     # obs == 3777
-# 
-# # create variables for number of bales
-# gin_test <- gin_counts_2[
-# 
+# # select variables for use
+# hrvstd_clean <- hrvstd_2[
+#     , # no row ops
+#     ..keep_vars_hrvstd
 # ]
 # 
-# total_op_lookup <- gin_counts_2[
-#     domain_desc == "TOTAL",
-#     .(total_operations = max(Value)),
-#     by = .(location_id, year)
-# ]
-# 
-# gin_counts_test <- total_op_lookup[gin_counts, on = .(location_id, year)]
-# 
-# # drop missing totals
-# gin_counts_test <- gin_counts_test[!is.na(total_operations)]
-# 
-# gin_test2 <- unique(gin_counts_test, by = c("location_id", "year"))
-# 
-# gin_test2 <- gin_test2[freq_desc == "MONTHLY"]]
+# # drop remaining duplicates
+# hrvstd_clean <- unique(hrvstd_clean)
+#     # obs == 21790
 
-
-
-# keep_vars_plntd <- c(
-#     "location_id", "year", "upland_acres", "pima_acres", "class_desc", 
+# 
+# # variables to keep
+# keep_vars_yield <- c(
+#     "location_id", "year", "upland_yield", "pima_yield", "class_desc", 
 #     "unit_desc", "state_fips_code", "asd_code", "county_code", "state_alpha",
 #     "asd_desc", "county_name"
 # )
 # 
 # # create variables for pima and upland acres
-# plntd[
-#         , # no row operations 
-#         upland_acres := ifelse(
-#             class_desc == "UPLAND", # selects for the upland class
-#             Value, # assigns the value when class_desc is true
-#             NA_real_ # Na for doubles
-#         )
-#     ][
-#         , # no row operations
-#         pima_acres := ifelse(
-#             class_desc == "PIMA", # selects for Pima cotton
-#             Value,
-#             NA_real_
-#         )
+# yield_2[
+#     , # no row operations 
+#     upland_yield := ifelse(
+#         class_desc == "UPLAND", # selects for the upland class
+#         Value, # assigns the value when class_desc is true
+#         NA_real_ # Na for doubles
+#     )
+# ][
+#     , # no row operations
+#     pima_yield := ifelse(
+#         class_desc == "PIMA", # selects for Pima cotton
+#         Value,
+#         NA_real_
+#     )
 # ]
 # 
 # # create clean dataset with plntd dat and specific variables
-# plntd_clean <- plntd_2[
+# yield_clean <- yield_2[
 #     , # no row operations
-#     ..keep_vars_plntd
+#     ..keep_vars_yield
 # ]
 # 
-# # keep only unique values
-# plntd_clean <- unique(plntd_clean)
-#     # obs == 16376
-
-
-# # keep vars for harvested data
-# keep_vars_hrvstd <- c(
-#     "location_id", "year", "upland_hvst_acr", "pima_hvst_acr", "all_hvst_acr", 
-#     "class_desc", "unit_desc", "state_fips_code", "asd_code", "county_code",
-#     "state_alpha", "asd_desc", "county_name"
-# )
-
-
+# # drop duplicate observations if any
+# yield_clean <- unique(yield_2)
+#     # obs == 16,369
+# 
