@@ -19,7 +19,7 @@
     # harmonizes with manufacturing data
 
 # to do:
-    # cotton gins work.
+    # none
 
 ########################################################################
 # - 0 Setup
@@ -98,8 +98,6 @@ locations <- cotton |>
     bind_rows() |>
     # Get the unique row combinations of those remaining columns
     distinct()
-
-
 
 # subset gin counts from cotton
 gin_counts <- cotton[["gin_counts.csv"]]
@@ -380,7 +378,7 @@ cotton_df <- full_join(
 # take cotton dataset and create matching area fips code
 cotton_df <- cotton_df |>
     mutate(
-        state_fips_code  = str_pad(state_fips_code, width = 2, pad = "0"),
+        state_fips_code = str_pad(state_fips_code, width = 2, pad = "0"),
         county_code = str_pad(county_code, width = 3, pad = "0"),
         area_fips = paste0(
             state_fips_code, county_code
