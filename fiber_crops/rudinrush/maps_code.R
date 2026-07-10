@@ -21,7 +21,7 @@
     
 
 ########################################################################
-# - 0 Setup
+# - 0 setup
 ########################################################################
 
 # data file path
@@ -100,7 +100,7 @@ cotton_shape <- left_join(
 
 
 ########################################################################
-# - 2 create variables for maps
+# - 2 create variables for maps and create full harmonized dataset
 ########################################################################
 
 # create total county cotton production variables
@@ -144,8 +144,148 @@ cttn_mills <- cttn_dmnd[
     year > 1989,
     .(
         year,
-        mll_use_1k_ble = value
+        mll_use_1k_ble = value,
+        mll_use_pct_chg = 
     )
 ]
 
+# add to ctn data df
+ctn_data <- merge(
+    ctn_data,
+    cttn_mills,
+    by = "year",
+    all.x = TRUE
+)
 
+# create upland exports data
+uplnd_exprts <- cttn_dmnd[
+    table_number == 2 &
+    category == "exports" &
+    year > 1989,
+    .(
+        year,
+        up_exprts_1k_ble = value
+    )
+]
+
+# merge with greater data
+ctn_data <- merge(
+    ctn_data,
+    uplnd_exprts,
+    by = "year",
+    all.x = TRUE
+)
+
+# create upland mill use data set data
+uplnd_mills <- cttn_dmnd[
+    table_number == 2 &
+    category == "mill_use" &
+    year > 1989,
+    .(
+        year,
+        up_mill_use_1k_ble = value
+    )
+]
+
+# merge with cotton data
+ctn_data <- merge(
+    ctn_data,
+    uplnd_mills,
+    by = "year",
+    all.x = TRUE
+)
+
+# create pima exports data
+pima_exprts <- cttn_dmnd[
+    table_number == 3 &
+    category == "exports" &
+    year > 1989,
+    .(
+        year,
+        pima_exprts_1k_ble = value
+    )
+]
+
+# merge with larger data set
+ctn_data <- merge(
+    ctn_data,
+    pima_exprts,
+    by = "year",
+    all.x = TRUE
+)
+
+# create pima exports data
+pima_mills <- cttn_dmnd[
+    table_number == 3 &
+        category == "mill_use" &
+        year > 1989,
+    .(
+        year,
+        pima_mill_use_1k_ble = value
+    )
+]
+
+# merge with larger data set
+ctn_data <- merge(
+    ctn_data,
+    pima_mills,
+    by = "year",
+    all.x = TRUE
+)
+
+
+########################################################################
+# - 3 create map variables
+########################################################################
+
+# create ratios for maps
+ctn_data[
+    , # no row operations
+    `:=`(
+        plntd_mills_rto = ttl_acres_plntd / mll_use_1k_ble,
+        hvstd_mills_rto = ttl_acres_hvstd / mll_use_1k_ble,
+        up_plntd_mills_rto = uplnd_acres_plntd / mll_use_1k_ble,
+        up_hvstd_mills_rto = uplnd_acres_hvstd / mll_use_1k_ble,
+        pima_plntd_mills_rto = pima_acres_plntd / mll_use_1k_ble,
+        pima_hvstd_mills_rtso = pima_acres_hvstd / mll_use_1k_ble,
+        plntd_exprt_rto = ttl_acres_plntd / exprts_1k_ble,
+        hvstd_exprt_rto = ttl_acres_hvstd / exprts_1k_ble,
+        up_plntd_exprts_rto = uplnd_acres_plntd / exprts_1k_ble,
+        up_hvstd_exprts_rto = uplnd_acres_hvstd / exprts_1k_ble,
+        pima_plntd_exprts_rto = pima_acres_plntd / exprts_1k_ble,
+        pima_hvstd_exprts_rto = pima_acres_hvstd / exprts_1k_ble
+    )
+]
+
+map_rtos <- ctn_data[
+    , # no row opeartions
+    .(
+        wghtd_plntd_mills = sum(ttl_acres_plntd) / sum(mll_use_1k_ble),
+        wghtd_plntd_exprts_rto = sum(ttl_acres_plntd) / sum(exprts_1k_ble)
+    ),
+    by = area_fips
+]
+
+# create averages over the years for mapping display
+# merge to land vars
+map_start <- merge(
+    cotton_shape,
+    map_rtos,
+    all.x = TRUE
+)
+
+moop <- tm_shape(map_start) +
+    tm_polygons(
+        fill = "wghtd_plntd_mills",
+        style = "quantile",
+        n = 5,
+        palette = "YlOrRd",
+        title = "County Map of Ratio of Planted Acres to Mills"
+    ) +
+    tm_layout(
+        legend.outside = TRUE,
+        frame = FALSE
+    ) +
+    tm_borders(lwd = 0.5)
+
+print(moop)
