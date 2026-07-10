@@ -85,8 +85,11 @@ cttn_dmnd <- fread(
                 col
             }
         }
-)
-    
+) |>
+    setDT() # force object to be data table type
+
+# change nanmes of variables
+setnames(cttn_dmnd, "period", "year")
 
 # merge in shape data
 cotton_shape <- left_join(
@@ -110,11 +113,39 @@ cotton_df[
     )
 ][
     , # no row operations
-    `:=`(ttl_yield = (ttl_bales / ttl_acres_hvstd) * 480,
-         yld_plntd_rto = (ttl_bales / ttl_acres_plntd) * 480
+    `:=`(ttl_yield = (ttl_bales / ttl_acres_hvstd) * 480, 
+         yld_plntd_rto = (ttl_bales / ttl_acres_plntd) * 480 # creates new measure
     )
 ]
  
-# create
+# create exports table for 1990 - 2025
+cttn_exports <- cttn_dmnd[
+    table_number == 1 &
+    category == "qty_of_exports" &
+    year > 1989,
+    .( # names of variables to keep and rename
+        year,
+        exprts_1k_ble = value
+    )
+]
+
+# create cotton df with exports
+ctn_data <- merge(
+    cotton_df,
+    cttn_exports,
+    by = "year",
+    all.x = TRUE
+)
+
+# create mill use table
+cttn_mills <- cttn_dmnd[
+    table_number == 1 &
+    category == "mill_use" &
+    year > 1989,
+    .(
+        year,
+        mll_use_1k_ble = value
+    )
+]
 
 
