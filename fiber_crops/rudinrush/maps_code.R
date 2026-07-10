@@ -55,6 +55,12 @@ cotton_df <- fread(
     colClasses = list(character = "area_fips")
 )
 
+# get numbered columns for cotton 
+num_cols <- names(cotton_df)[sapply(cotton_df, is.numeric)]
+
+# force numearic columns to have 0s and not NA
+setnafill(cotton_df, type = "const", fill = 0, cols = num_cols)
+
 # full manufacturing
 cttn_mftr <- fread(
     file = file.path(
@@ -63,6 +69,25 @@ cttn_mftr <- fread(
     colClasses = list(character = "area_fips")
 )
 
+# cotton demand data
+cttn_dmnd <- fread(
+    file = file.path(
+        data, "cotton_data", "cotton_export_mill_use", 
+            "US-Cotton-Supply-and-Demand.csv"
+    )
+) |>
+    lapply( # forces strings to lowercase for consistency
+        function(col) { # applies function to columns
+            if (is.character(col)) { # checks for characters in vector
+                tolower(col) # function to make all chracters lowercase
+            }
+            else { # ensures other columns keep data populated
+                col
+            }
+        }
+)
+    
+
 # merge in shape data
 cotton_shape <- left_join(
     county_shapes,
@@ -70,23 +95,26 @@ cotton_shape <- left_join(
     by = join_by(area_fips)
 )
 
-cotton_df <- cotton_df |>
-    mutate(
-        up_yld_calc_plnt = uplnd_acres_plntd * upland_yield,
-        up_yld_calc_hvst = uplnd_acres_hvstd * upland_yield
-    ) |>
-    mutate(
-        up_bale_plnt = up_yld_calc_plnt / 480,
-        up_bale_hvst = up_yld_calc_hvst / 480
-    ) |>
-    mutate(
-        yld_plnt_acr = up_yld_calc_hvst 
-    )
 
-# create sub data for maps
-cotton_map <- cotton_df |>
-    group_by(area_fips) |>
-    summarise(
-        yld_plnt_acr = mean()
+########################################################################
+# - 2 create variables for maps
+########################################################################
+
+# create total county cotton production variables
+cotton_df[
+    , # row operations
+    `:=`(
+        ttl_bales = upland_bales + pima_bales,
+        ttl_acres_plntd = uplnd_acres_plntd + pima_acres_plntd,
+        ttl_acres_hvstd = uplnd_acres_hvstd + pima_acres_hvstd
     )
+][
+    , # no row operations
+    `:=`(ttl_yield = (ttl_bales / ttl_acres_hvstd) * 480,
+         yld_plntd_rto = (ttl_bales / ttl_acres_plntd) * 480
+    )
+]
+ 
+# create
+
 
