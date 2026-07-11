@@ -257,6 +257,17 @@ ctn_data[
     )
 ]
 
+
+# create set of numeric columns
+cols_alz <- setdiff(
+    names(ctn_data)[
+        sapply(cotton_df, is.numeric) # checkes for numeric cols
+    ], c("year", "area_fips")
+)
+
+# calculate
+
+
 map_rtos <- ctn_data[
     , # no row opeartions
     .(
@@ -274,18 +285,40 @@ map_start <- merge(
     all.x = TRUE
 )
 
+# get year over year changes
+setorder(
+    ctn_data,
+    area_fips,
+    year
+    )
+
+# new names for columns
+col_new_name <- paste0("pct_chg_", cols_alz)
+
+ctn_data[
+    , # no row operations
+    (col_new_name) := lapply(
+        .SD, function(x) {
+            prev <- data.table::shift(x) # creates vector for lag values
+            ((x-prev) / prev) * 100
+        }
+    ),
+    by = area_fips,
+    .SDcols = cols_alz
+]
+
+
 moop <- tm_shape(map_start) +
     tm_polygons(
         fill = "wghtd_plntd_mills",
         style = "quantile",
         n = 5,
-        palette = "YlOrRd",
         title = "County Map of Ratio of Planted Acres to Mills"
     ) +
     tm_layout(
         legend.outside = TRUE,
         frame = FALSE
     ) +
-    tm_borders(lwd = 0.5)
+    tm_borders(lwd = 0.1)
 
 print(moop)
