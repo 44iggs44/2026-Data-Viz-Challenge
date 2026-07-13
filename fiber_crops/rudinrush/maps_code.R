@@ -325,7 +325,7 @@ cols_alz <- setdiff(
 # new names for columns
 col_new_name <- paste0("pct_chg_", cols_alz)
 
-# creates new columsn
+# creates new columns of pct change
 ctn_data_unq[
     , # no row operations
     (col_new_name) := lapply(
@@ -391,8 +391,8 @@ map_ntl_share_2000 <- ctn_data_unq[
         up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
         pma_mill_chg = sum(yoy_chg_pma_mils)
         ttl_exprt_chg = sum(yoy_chg_ttl_exprt, na.rm = TRUE),
-        up_exprt_chg = sum( yoy_chg_up_exprt, na.rm = TRUE),
-        pma_exprt_chg = sum( yoy_chg_pma_exprt, na.rm = TRUE)
+        up_exprt_chg = sum(yoy_chg_up_exprt, na.rm = TRUE),
+        pma_exprt_chg = sum(yoy_chg_pma_exprt, na.rm = TRUE)
     ),
     by = area_fips
 ][
@@ -402,6 +402,8 @@ map_ntl_share_2000 <- ctn_data_unq[
         pct_us_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
         pct_us_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
         ttl_chg_wrt_mill = cnty_ttl_chg / ttl_mills_chg,
+        up_chg_wrt_mill = cnty_upl_chg / up_mill_chg,
+        pma_chg_wrt_mill_chg = cnty_pma_chg / pma_mill_chg,
         ttl_chg_wrt_exprt = cnty_ttl_chg / ttl_exprt_chg,
         up_chg_wrt_exprt = cnty_upl_chg / ttl_exprt_chg,
         pma_chg_wrt_exprt = cnty_pma_chg / ttl_exprt_chg,
@@ -412,7 +414,7 @@ map_ntl_share_2000 <- ctn_data_unq[
     pct_us_pma_chg == 0,
     `:=`(
         pct_us_pma_chg = NA,
-        pma_chg_wrt_exprt = NA,
+        pma_chg_wrt_mills = NA,
         pma_chg_wrt_pma_exprt = NA
     )
 ]
@@ -425,10 +427,10 @@ map_ntl_share_2010 <- ctn_data_unq[
         cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
         cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
         cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
-        ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE)),
-        ttl_exprt_chg = sum(yoy_chg_ttl_exprt, na.rm = TRUE)),
-        up_exprt_chg = sum( yoy_chg_up_exprt, na.rm = TRUE)),
-        pma_exprt_chg = sum( yoy_chg_pma_exprt, na.rm = TRUE))
+        ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
+        ttl_exprt_chg = sum(yoy_chg_ttl_exprt, na.rm = TRUE),
+        up_exprt_chg = sum( yoy_chg_up_exprt, na.rm = TRUE),
+        pma_exprt_chg = sum( yoy_chg_pma_exprt, na.rm = TRUE)
     ),
     by = area_fips
 ][
