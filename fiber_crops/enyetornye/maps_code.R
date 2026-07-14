@@ -44,15 +44,24 @@ fig <- file.path(
 us_counties <- counties(cb = TRUE, year = 2024, class = "sf")
 
 # download county data select california and texas for comparison
-county_shapes <- us_counties[
-  us_counties$STATEFP %in% c(
-    "06", "48" # selects california and texas for comparison
-  ), 
-]
+cali_shape <- us_counties[
+  us_counties$STATEFP == "06", # selects california and texas for comparison, 
+] |> st_transform(5070)
+
+# download county data select california and texas for comparison
+tx_shape <- us_counties[
+  us_counties$STATEFP == "48", # selects california and texas for comparison, 
+] |> st_transform(5070)
+
+
 
 # change fips to match cotton and manufacturing data
-county_shapes <- county_shapes |>
+cali_shape <- cali_shape |>
   rename(area_fips = GEOID)
+
+tx_shape <- tx_shape |>
+  rename(area_fips = GEOID)
+
 
 # load cotton production data
 cttn_pdctn <- fread(
@@ -68,52 +77,31 @@ cttn_pdctn <- fread(
 ########################################################################
 
 # looking at total county raw share all acres
-map_ntl_share_2000 <- cttn_pdctn[
-  year %in% 1990:2000 &
-  state_alpha == "CA" |
-  state_alpha == "TX", # selects years from 1990 to 2000
+ca_tx_data <- cttn_pdctn[
+  year %in% 1990:2010 &
+  state_alpha %in% c("CA", "TX"), # selects years from 1990 to 2000
   .(
     year,
+    state_alpha,
     cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
     cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
     cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
     ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
     up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
-    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE),
-    ttl_exprt_chg = sum(yoy_chg_ttl_exprt, na.rm = TRUE),
-    up_exprt_chg = sum(yoy_chg_up_exprt, na.rm = TRUE),
-    pma_exprt_chg = sum(yoy_chg_pma_exprt, na.rm = TRUE)
+    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
   ),
   by = area_fips
 ][
   , # no row operations
   `:=`(
-    pct_us_ttl_chg = cnty_ttl_chg / sum(cnty_ttl_chg, na.rm = TRUE),
-    pct_us_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
-    pct_us_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
-    ttl_chg_wrt_mill = cnty_ttl_chg / ttl_mills_chg,
-    up_chg_wrt_mill = cnty_upl_chg / up_mill_chg,
-    pma_chg_wrt_mill_chg_00 = cnty_pma_chg / pma_mill_chg, # target variable relative change in acres contributed to us scaled by change in number of mills
-    ttl_chg_wrt_exprt = cnty_ttl_chg / ttl_exprt_chg,
-    up_chg_wrt_exprt = cnty_upl_chg / ttl_exprt_chg,
-    pma_chg_wrt_exprt = cnty_pma_chg / ttl_exprt_chg,
-    up_chg_wrt_up_exprt = cnty_upl_chg / up_exprt_chg,
-    pma_chg_wrt_pma_exprt = cnty_pma_chg / pma_exprt_chg
-  )
-][
-  pct_us_pma_chg == 0,
-  `:=`(
-    pct_us_pma_chg = NA,
-    pma_chg_wrt_mills = NA,
-    pma_chg_wrt_pma_exprt = NA
+    pma_chg_wrt_mill_chg= cnty_pma_chg / pma_mill_chg
   )
 ]
 
 # create dataset of values from 2001-2010 for map specifics
 map_ntl_share_2010 <- cttn_pdctn[
   year %in% 2001:2010 &
-  state_alpha == "CA" |
-  state_alpha == "TX", # selects for years from 2001 to 2010
+  state_alpha %in% c("CA", "TX"), # selects for years from 2001 to 2010
   .(
     year,
     cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
@@ -121,40 +109,38 @@ map_ntl_share_2010 <- cttn_pdctn[
     cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
     ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
     up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
-    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE),
-    ttl_exprt_chg = sum(yoy_chg_ttl_exprt, na.rm = TRUE),
-    up_exprt_chg = sum(yoy_chg_up_exprt, na.rm = TRUE),
-    pma_exprt_chg = sum(yoy_chg_pma_exprt, na.rm = TRUE)
+    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
   ),
   by = area_fips
 ][
   , # no row operations
   `:=`(
-    pct_us_ttl_chg = cnty_ttl_chg / sum(cnty_ttl_chg, na.rm = TRUE),
-    pct_us_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
-    pct_us_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
-    ttl_chg_wrt_mill = cnty_ttl_chg / ttl_mills_chg,
-    up_chg_wrt_mill = cnty_upl_chg / up_mill_chg,
-    pma_chg_wrt_mill_chg_10 = cnty_pma_chg / pma_mill_chg, # target variable relative change in acres contributed to us scaled by change in number of mills
-    ttl_chg_wrt_exprt = cnty_ttl_chg / ttl_exprt_chg,
-    up_chg_wrt_exprt = cnty_upl_chg / ttl_exprt_chg,
-    pma_chg_wrt_exprt = cnty_pma_chg / ttl_exprt_chg,
-    up_chg_wrt_up_exprt = cnty_upl_chg / up_exprt_chg,
-    pma_chg_wrt_pma_exprt = cnty_pma_chg / pma_exprt_chg
-  )
-][
-  pct_us_pma_chg == 0,
-  `:=`(
-    pct_us_pma_chg = NA,
-    pma_chg_wrt_mills = NA,
-    pma_chg_wrt_pma_exprt = NA
+    pma_chg_wrt_mill_chg_10 = cnty_pma_chg / pma_mill_chg 
   )
 ]
 
+
+mill_chg_10 <- map_ntl_share_2010[
+  , # no row operations
+  .(
+    area_fips,
+    pma_chg_wrt_mill_chg_10
+  )
+] |> unique()
+
+mill_chg_00 <- map_ntl_share_2000[
+  , # no row ops
+  .(
+    area_fips,
+    pma_chg_wrt_mill_chg_00
+  )
+] |> unique()
+
+
 map_data <- left_join(
-  map_ntl_share_2000,
-  map_ntl_share_2010,
-  by = c("area_fips", "year")
+  mill_chg_00,
+  mill_chg_10,
+  by = c("area_fips")
 )
 
 
@@ -174,42 +160,260 @@ map_full <- left_join(
 
 map_full_test <- map_full[
   , # no row operations
-  .(area_fips,
+  c(area_fips,
     pma_chg_wrt_mill_chg_00,
-    pma_chg_wrt_mill_chg_10,
-    )
+    pma_chg_wrt_mill_chg_10
+  )
 ]
 
-tx_ca_pma_comp <- tm_shape(map_full) +
+
+
+# map check 
+plot_state_period_comparison_2(
+  data = cttn_pdctn,
+  shapes = county_shapes,
+  states = c("CA", "TX"),
+  metric = "pma_chg_wrt_mill_chg",
+  periods = list(1990:2000, 2001:2010),
+  period_labels = c("1990-2000","2001-2010"),
+  state_col = "state_alpha",
+  year_col = "year",
+  fips_col = "area_fips"
+)
+
+
+# Texas and California, 2000 vs 2010
+tx_ca_pma_comp <- rbind(
+  ca_tx_data[
+    year %in% 1990:2000 & state_alpha %in% c("TX", "CA"),
+    .(
+      state_alpha,
+      end_year = "2000",
+      pma_chg_wrt_mill_chg = sum(pma_chg_wrt_mill_chg, na.rm = TRUE)
+    ),
+    by = area_fips
+  ],
+  ca_tx_data[
+    year %in% 2001:2010 & state_alpha %in% c("TX", "CA"),
+    .(
+      state_alpha,
+      end_year = "2010",
+      pma_chg_wrt_mill_chg = sum(pma_chg_wrt_mill_chg, na.rm = TRUE)
+    ),
+    by = area_fips
+  ],
+  fill = TRUE
+)
+
+
+
+
+tx_ca_pma_comp[
+  ,
+  year := NULL
+]
+
+texas_pma <- tx_ca_pma_comp[
+  state_alpha == "TX"
+]
+
+tx_pma$period <- factor(
+  tx_pma$period,
+  levels = c("2000", "2010")
+)
+
+cali_pma <- tx_ca_pma_comp[
+  state_alpha == "CA"
+] |> unique()
+
+ca_pma <- left_join(
+  cali_shape,
+  cali_pma,
+  by = "area_fips"
+)
+
+tx_pma <- left_join(
+  tx_shape,
+  texas_pma,
+  by = "area_fips"
+)
+
+ca_pma$period <- factor(
+  ca_pma$period,
+  levels = c("2000", "2010")
+)
+
+ca_pma_unq_00 <- ca_pma |>
+  filter(!is.na(pma_chg_wrt_mill_chg))
+
+
+tx_pma_unq <- tx_pma  |>
+  filter(!is.na(pma_chg_wrt_mill_chg))
+
+
+ca_map <- tm_shape(ca_pma_unq) +
   tm_polygons(
-    fill = c("pma_chg_wrt_mill_chg_00", "pma_chg_wrt_mill_chg_10"),
+    fill = "pma_chg_wrt_mill_chg",
+    fill.scale = tm_scale_intervals(
+      values = "pu_gn",
+      style = "jenks",
+      n = 10
+    ),
+    fill.legend = tm_legend(
+    title = "Jenks Scaled Quantiles"
+    )
+  ) +
+  tm_facets_grid(columns = "period") +
+  tm_layout(
+    legend.outside = TRUE,
+    frame = FALSE
+  ) +
+  tm_borders(lwd = 0.5)
+
+tx_map <- tm_shape(tx_pma_unq) +
+  tm_polygons(
+    fill = "pma_chg_wrt_mill_chg",
+    fill.scale = tm_scale_intervals(
+      values = "pu_gn",
+      style = "jenks",
+      n = 10
+    ),
+    fill.legend = tm_legend(
+      title = "Jenks Scaled Quantiles"
+    )
+  ) +
+  tm_facets_grid(columns = "period") +
+  tm_layout(
+    legend.outside = TRUE,
+    frame = FALSE
+  ) +
+  tm_borders(lwd = 0.5)
+
+stacked_map <- tmap_arrange(
+  tx_map,
+  ca_map,
+  ncol = 1,
+  nrow = 2
+)
+
+print(stacked_map)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tx_ca_pma_comp_unq <- unique(tx_ca_pma_comp)
+
+tx_ca_pma_comp_unq[
+  !is.na(state_alpha) & !is.na(period), # no row op
+  .(
+    area_fips,
+    state_alpha,
+    period,
+    pma_chg_wrt_mill_chg
+  )
+]
+
+
+na_subset <- copy(tx_ca_pma_comp_unq[is.na(tx_ca_pma_comp_unq$period)])
+
+
+
+tx_ca_pma_comp_unq <- left_join(
+  county_shapes,
+  tx_ca_pma_comp_unq,
+  by = "area_fips"
+)
+
+
+
+tx_ca_pma_comp_unq$STUSPS <- factor(tx_ca_pma_comp_unq$STUSPS, levels = c("TX", "CA"))
+tx_ca_pma_comp_unq$period <- factor(tx_ca_pma_comp_unq$period, levels = c("2000", "2010"))
+
+
+
+
+
+
+
+
+tx_ca_pma_map <- tm_shape(tx_ca_pma_comp_unq[!is.na(c("period", "state_alpha"))]) +
+  tm_polygons(
+    fill = "pma_chg_wrt_mill_chg",
     col_alpha = 0,
     fill.scale = tm_scale_intervals(
-        style = "jenks",
-        n = 5
-      ),
+      style = "jenks",
+      n = 5
+    ),
     fill.legend = tm_legend(
-        title = "Change in Area of ELS Cotton Scaled by The Change in ELS Cotton Mills"
-      )
+      title = "Change in Area of ELS Cotton Scaled by The Change in ELS Cotton Mills"
+    )
   ) +
-      tm_layout(
-        legend.outside = TRUE,
-        frame = FALSE,
-        bg.color = "transparent",
-        outer.bg.color = "transparent"
-      ) +
-      tm_borders(lwd = 0)
+  tm_facets_grid(rows = "period", columns = "STUSPS") +
+  tm_layout(
+    legend.outside = TRUE,
+    frame = FALSE
+  ) +
+  tm_borders(lwd = 1) +
+  tm_options(legend.na.show = FALSE)
+
+print(tx_ca_pma_map)
 
   
+
+plot_state_period_comparison(
   
-  
-  
-  
-  
-  
-  
-  
-  
+)
+
+
+ggplot2::ggplot(plot_data) +
+  ggplot2::geom_sf(ggplot2::aes(fill = value), color = NA) +
+  ggplot2::facet_grid(period_panel ~ state_panel) +
+  ggplot2::scale_fill_distiller(palette = "YlOrRd", direction = 1, na.value = "grey85") +
+  ggplot2::labs(
+    title = paste0("Side-by-side comparison of ", metric),
+    subtitle = paste(period_labels, collapse = " vs "),
+    fill = metric
+  ) +
+  ggplot2::theme_minimal(base_size = 12) +
+  ggplot2::theme(
+    panel.grid = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank(),
+    axis.title = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    strip.text = ggplot2::element_text(face = "bold")
+  )
+
+ca_tx_map <- ggplot(ca_tx_data)  +
+  geom_sf(
+    aes(
+      fill = 
+    )
+  )
+
+
+
+
+
+
+
+
+
+
+
 
 # all changes total time periods
 chg_area_up <- tm_shape(map) +
@@ -507,6 +711,7 @@ tot_exprt_chin <- tm_shape(map_china) +
   tm_polygons(
     fill = "ttl_chg_wrt_exprt",
     col_alpha = 0,
+    col = ""
     fill.scale = tm_scale_intervals(
       style = "quantile",
       n = 5,

@@ -381,15 +381,14 @@ ctn_data_unq[
 
 # looking at total county raw share all acres
 map_ntl_share_2000 <- ctn_data_unq[
-    year %in% 1990:2000,
+    year %in% 1990:2000 & state_alpha %in% c("CA", "TX"),
     .(
-        year,
         cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
         cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
         cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
         ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
         up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
-        pma_mill_chg = sum(yoy_chg_pma_mils)
+        pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE),
         ttl_exprt_chg = sum(yoy_chg_ttl_exprt, na.rm = TRUE),
         up_exprt_chg = sum(yoy_chg_up_exprt, na.rm = TRUE),
         pma_exprt_chg = sum(yoy_chg_pma_exprt, na.rm = TRUE)
@@ -414,7 +413,7 @@ map_ntl_share_2000 <- ctn_data_unq[
     pct_us_pma_chg == 0,
     `:=`(
         pct_us_pma_chg = NA,
-        pma_chg_wrt_mills = NA,
+        pma_chg_wrt_mill_chg = NA,
         pma_chg_wrt_pma_exprt = NA
     )
 ]
@@ -932,6 +931,64 @@ pma_china <- tm_shape(map_china) +
     tm_borders(lwd = 0)
 
 print(pma_china)
+
+
+# Texas and California, 2000 vs 2010
+tx_ca_pma_comp <- rbind(
+    ctn_data_unq[
+        year %in% 1990:2000 & state_alpha %in% c("TX", "CA"),
+        .(
+            area_fips,
+            state_alpha,
+            period = "2000",
+            pma_chg_wrt_mill_chg = sum(pma_chg_wrt_mill_chg, na.rm = TRUE)
+        ),
+        by = area_fips
+    ],
+    ctn_data_unq[
+        year %in% 2001:2010 & state_alpha %in% c("TX", "CA"),
+        .(
+            area_fips,
+            state_alpha,
+            period = "2010",
+            pma_chg_wrt_mill_chg = sum(pma_chg_wrt_mill_chg, na.rm = TRUE)
+        ),
+        by = area_fips
+    ],
+    fill = TRUE
+)
+
+tx_ca_pma_comp$state_alpha <- factor(tx_ca_pma_comp$state_alpha, levels = c("TX", "CA"))
+tx_ca_pma_comp$period <- factor(tx_ca_pma_comp$period, levels = c("2000", "2010"))
+
+tx_ca_pma_comp <- left_join(
+    county_shapes,
+    tx_ca_pma_comp,
+    by = "area_fips"
+)
+
+tx_ca_pma_comp <- tm_shape(tx_ca_pma_comp) +
+    tm_polygons(
+        fill = "pma_chg_wrt_mill_chg",
+        col_alpha = 0,
+        fill.scale = tm_scale_intervals(
+            style = "jenks",
+            n = 5
+        ),
+        fill.legend = tm_legend(
+            title = "Change in Area of ELS Cotton Scaled by The Change in ELS Cotton Mills"
+        )
+    ) +
+    tm_facets_grid(rows = "period", columns = "state_alpha") +
+    tm_layout(
+        legend.outside = TRUE,
+        frame = FALSE,
+        bg.color = "transparent",
+        outer.bg.color = "transparent"
+    ) +
+    tm_borders(lwd = 0)
+
+print(tx_ca_pma_comp)
 
 
 
