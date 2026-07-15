@@ -976,7 +976,7 @@ tx_ca_pma_comp <- tm_shape(tx_ca_pma_comp) +
             n = 5
         ),
         fill.legend = tm_legend(
-            title = "Change in Area of ELS Cotton Scaled by The Change in ELS Cotton Mills"
+            title = "Change in Planted Area of ELS Cotton By County Scaled by The Change in ELS Cotton Mills Demand"
         )
     ) +
     tm_facets_grid(rows = "period", columns = "state_alpha") +
