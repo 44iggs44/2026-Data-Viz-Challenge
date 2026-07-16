@@ -2,7 +2,7 @@
 # Created on: 13 July 2026
 # Created by: lirr
 # Edited by: lirr
-# Last edit: 13 Jul 2026
+# Last edit: 15 Jul 2026
 # R version 4.5.2
 
 # note:
@@ -82,10 +82,9 @@ cttn_pdctn <- fread(
 
 # looking at total county raw share all acres
 ca_tx_data <- cttn_pdctn[
-  year %in% 1990:2010 &
+  year %in% 2000:2020 &
   state_alpha %in% c("CA", "TX"), # selects years from 1990 to 2000
   .(
-    year,
     state_alpha,
     cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
     cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
@@ -94,11 +93,22 @@ ca_tx_data <- cttn_pdctn[
     up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
     pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
   ),
-  by = area_fips
+  by = .(area_fips, year)
 ][
   , # no row operations
   `:=`(
-    pma_chg_wrt_mill_chg= cnty_pma_chg / pma_mill_chg
+    pct_chg_us_ttl_chg = cnty_ttl_chg / sum(cnty_ttl_chg, na.rm = TRUE),
+    pct_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
+    pct_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
+    pct_upl_mill_chg = up_mill_chg / ttl_mills_chg,
+    pct_pma_mill_chg = pma_mill_chg / ttl_mills_chg
+  ),
+  by = year
+][
+  , # no row operations
+  `:=`(
+  chg_upl_wrt_chg_upl_mills = pct_upl_chg / pct_upl_mill_chg,
+  chg_pma_wrt_chg_pma_mills = pct_pma_chg / pct_upl_mill_chg
   )
 ]
 
@@ -108,59 +118,97 @@ ca_tx_data <- cttn_pdctn[
 ########################################################################
 
 # Texas and California, 2000 vs 2010
-tx_ca_pma_comp <- cttn_pdctn[
-    state_alpha %in% c("TX", "CA"),
-    .(
-      state_alpha,
-      cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
-      cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
-      cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
-      ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
-      up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
-      pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
-    ),
-    by = area_fips
-  ][
-    , # no row operations
-    `:=`(
-      pma_chg_wrt_mill_chg = cnty_pma_chg / pma_mill_chg
-      upl_chg_wrt_mill_chg = cnty_upl_chg / upl_mill_chg
-    )
-  ]
+tx_ca_comp <- cttn_pdctn[
+  year %in% 2000:2020 &
+    state_alpha %in% c("CA", "TX"), # selects years from 1990 to 2000
+  .(
+    state_alpha,
+    cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
+    cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
+    cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
+    ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
+    up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
+    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
+  ),
+  by = .(area_fips, year)
+][
+  , # no row operations
+  `:=`(
+    pct_chg_us_ttl_chg = cnty_ttl_chg / sum(cnty_ttl_chg, na.rm = TRUE),
+    pct_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
+    pct_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
+    pct_upl_mill_chg = up_mill_chg / ttl_mills_chg,
+    pct_pma_mill_chg = pma_mill_chg / ttl_mills_chg
+  ),
+  by = year
+][
+  , # no row operations
+  `:=`(
+    chg_upl_wrt_chg_upl_mills = pct_upl_chg / pct_upl_mill_chg,
+    chg_pma_wrt_chg_pma_mills = pct_pma_chg / pct_upl_mill_chg
+  )
+]
 
+tx_ca_comp_unq <- unique(tx_ca_comp)
 
-tx_ca_pma_comp_unq <- unique(tx_ca_pma_comp)
-
-tx_ca_pma_comp_unq <- left_join(
+tx_ca_comp_unq <- left_join(
   county_shapes,
-  tx_ca_pma_comp_unq,
+  tx_ca_comp_unq,
   by = "area_fips"
 )
 
-no_na_pma <- tx_ca_pma_comp_unq |>
-  filter(!is.na(end_year))
 
-# get list of na values for 1990-2000
-na_vals <- tx_ca_pma_comp_unq |>
-  filter(is.na(end_year))
+tx_data <- tx_ca_comp_unq[
+  tx_ca_comp_unq$STUSPS == "TX",
+  # no col ops
+]
 
-# duplicate data set
-na_val_2k <- na_vals |>
-  mutate(
-    end_year = as.character(2000)
+ca_data <- tx_ca_comp_unq[
+  tx_ca_comp_unq$STUSPS == "CA",
+  # no col ops
+]
+
+
+tx_map <- tm_shape(tx_data) +
+  tm_polygons(
+    fill = "chg_upl_wrt_chg_upl_mills",
+    fill.scale = tm_scale_continuous(),
+    fill.legend = tm_legend(
+      title = "Change in Share of Planted Upland Cotton Acres to Change in Share of Domestic Use",
+      orientation = "landscape",
+      position = tm_pos_out("center", "top", pos.h = "center")
+    )
   )
 
-na_val_2010 <- na_vals |>
-  mutate(
-    end_year = as.character(2010)
+print(tx_map)
+
+ca_map <- tm_shape(ca_data) + 
+  tm_polygons(
+    fill = "chg_pma_wrt_chg_pma_mills",
+    fill.scale = tm_scale_continuous(),
+    fill.legend = tm_legend(
+      title = "Change in Share of Planted ELS Cotton Acres to Change in Share of Domestic Use",
+      orientation = "landscape",
+      position = tm_pos_out("center", "top", pos.h = "center")
+    )
   )
 
-pma_comp <- bind_rows(no_na_pma, na_val_2k, na_val_2010)
+print(ca_map)
 
-# 
+ca_tx_comp <- tmap_arrange(ca_map, tx_map, ncol = 2)
 
-tx_ca_pma_comp_unq$STUSPS <- factor(tx_ca_pma_comp_unq$STUSPS, levels = c("TX", "CA"))
-pma_comp$end_year <- factor(pma_comp$end_year, levels = c("2000", "2010"))
+print(ca_tx_comp)
+
+tmap_save(
+  ca_tx_comp,
+  filename = file.path(fig,"ca_tx_acres_to_usage.png"),
+  width = 7,
+  height = 5,
+  dpi = 300
+)
+
+
+
 
 
 tx_ca_pma_map <-
@@ -174,7 +222,7 @@ tx_ca_pma_map <-
       value.na = "grey75"
     ),
     fill.legend = tm_legend(
-      title = "Change in Planted Area of ELS Cotton Scaled by The Change in ELS Cotton Usage by Mills"
+      title = "Change in Share of Cotton"
     )
   ) +
   tm_facets( columns = ) + 
