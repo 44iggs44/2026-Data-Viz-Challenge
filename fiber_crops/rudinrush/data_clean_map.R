@@ -2,7 +2,7 @@
 # Created on: 08 July 2026
 # Created by: lirr
 # Edited by: lirr
-# Last edit: 13 Jul 2026
+# Last edit: 15 Jul 2026
 # R version 4.5.2
 
 # note:
@@ -64,10 +64,10 @@ cotton_df <- fread(
 # get numbered columns for cotton 
 num_cols <- names(cotton_df)[sapply(cotton_df, is.numeric)]
 
-# force numearic columns to have 0s and not NA
+# force numeric columns to have 0s and not NA
 setnafill(cotton_df, type = "const", fill = 0, cols = num_cols)
 
-# full manufacturing
+# full manufacturing data
 cttn_mftr <- fread(
     file = file.path(
         data, "cotton_data", "refined", "cttn_mftr.csv"

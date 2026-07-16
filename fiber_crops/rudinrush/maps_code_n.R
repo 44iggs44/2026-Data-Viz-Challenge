@@ -55,15 +55,7 @@ county_shapes <- us_counties[
   us_counties$STATEFP %in% c("06", "48"), # selects california and texas for comparison, 
 ]
 
-
-
-# change fips to match cotton and manufacturing data
-# cali_shape <- cali_shape |>
-#   rename(area_fips = GEOID)
-# 
-# tx_shape <- tx_shape |>
-#   rename(area_fips = GEOID)
-
+# create 
 county_shapes <- county_shapes |>
   rename(area_fips = GEOID)
 
@@ -80,101 +72,131 @@ cttn_pdctn <- fread(
 # - 2 create variables for map
 ########################################################################
 
-# looking at total county raw share all acres
-ca_tx_data <- cttn_pdctn[
-  year %in% 2000:2020 &
-  state_alpha %in% c("CA", "TX"), # selects years from 1990 to 2000
-  .(
-    state_alpha,
-    cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
-    cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
-    cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
-    ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
-    up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
-    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
-  ),
-  by = .(area_fips, year)
+# get data set of cotton production and usage for year == 2000
+ca_tx_data_2000 <- cttn_pdctn[
+  year == 2000 & 
+  state_alpha %in% c("CA", "TX") # selects for california and texas data
+ ]
+
+# get dataset of cotton production and usage for year == 2020
+ca_tx_data_2020 <- cttn_pdctn[
+    year == 2020 & 
+    state_alpha %in% c("CA", "TX") # selects for california and texas data
+] 
+
+# create list of matching location_ids across both datasets
+loc_list <- intersect(
+    ca_tx_data_2000$location_id,
+    ca_tx_data_2020$location_id
+)
+
+# get list of var names to rename for differences (make data wide)
+
+# numeric columns and variables to keep
+num_cols <- setdiff( # create list of differences between two sets
+    names(ca_tx_data)[ # first set is the names of the variables that are numeric
+        sapply(ca_tx_data, is.numeric)
+    ], c("year", "location_id", "area_fips") # second set is identifying variables
+)
+
+# append year value
+var_name_2000 <- paste0(
+    num_cols,
+    "_2000"
+)
+
+# drop observations not in loc_list
+ca_tx_data_2000<- ca_tx_data_2000[
+    location_id %in% loc_list,
+]
+
+ca_tx_data_2020 <- ca_tx_data_2020[
+    location_id %in% loc_list,
+    # no col operations
+]
+
+# add first part of widened data set
+ca_tx_2000 <- setnames(
+    ca_tx_data_2000,
+    num_cols,
+    var_name_2000
+)
+
+# change tail of new var list
+var_name_2020 <- paste0(
+        num_cols,
+        "_2020"
+)
+
+
+# rename 2020 dataset
+setnames(
+    ca_tx_data_2020,
+    num_cols,
+    var_name_2020
+)
+
+# drop year variable
+ca_tx_data_2020[
+    , # no row operations
+    year := NULL
+]
+
+# merge data a together
+ca_tx_comp <- ca_tx_data_2000[
+    ca_tx_data_2020,
+    on = .(location_id)
+]
+
+# create differences data
+ca_tx_comp <- ca_tx_comp[
+    , # no row opeartions
+    `:=`(
+        up_diff = (upland_bales_2020 - upland_bales_2000) / upland_bales_2000,
+        pma_diff = (pima_bales_2020 - pima_bales_2000) / pima_bales_2000,
+        ttl_diff = (ttl_bales_2020 - ttl_bales_2000) / ttl_bales_2000,
+        up_mill_diff = (up_mill_use_1k_ble_2020 - up_mill_use_1k_ble_2000) / 
+            up_mill_use_1k_ble_2000,
+        pma_mill_diff = (pima_mill_use_1k_ble_2020 - pima_mill_use_1k_ble_2000) /
+            pima_mill_use_1k_ble_2000,
+        ttl_mill_diff = (mll_use_1k_ble_2020 - mll_use_1k_ble_2000) / 
+            mll_use_1k_ble_2000
+        
+    )
 ][
-  , # no row operations
-  `:=`(
-    pct_chg_us_ttl_chg = cnty_ttl_chg / sum(cnty_ttl_chg, na.rm = TRUE),
-    pct_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
-    pct_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
-    pct_upl_mill_chg = up_mill_chg / ttl_mills_chg,
-    pct_pma_mill_chg = pma_mill_chg / ttl_mills_chg
-  ),
-  by = year
-][
-  , # no row operations
-  `:=`(
-  chg_upl_wrt_chg_upl_mills = pct_upl_chg / pct_upl_mill_chg,
-  chg_pma_wrt_chg_pma_mills = pct_pma_chg / pct_upl_mill_chg
-  )
+    , # no row operations
+    `:=`(
+        indx_uplnd = up_diff / up_mill_diff,
+        indx_pima = pma_diff / pma_mill_diff,
+        indx_ttl = ttl_diff / ttl_mill_diff
+    )
 ]
 
 
-########################################################################
-# - 3 maps
-########################################################################
-
-# Texas and California, 2000 vs 2010
-tx_ca_comp <- cttn_pdctn[
-  year %in% 2000:2020 &
-    state_alpha %in% c("CA", "TX"), # selects years from 1990 to 2000
-  .(
-    state_alpha,
-    cnty_ttl_chg = sum(yoy_chg_ttl_acr, na.rm = TRUE),
-    cnty_upl_chg = sum(yoy_chg_upl_acr, na.rm = TRUE),
-    cnty_pma_chg = sum(yoy_chg_pma_acr, na.rm = TRUE),
-    ttl_mills_chg = sum(yoy_chg_ttl_mills, na.rm = TRUE),
-    up_mill_chg = sum(yoy_chg_up_mills, na.rm = TRUE),
-    pma_mill_chg = sum(yoy_chg_pma_mills, na.rm = TRUE)
-  ),
-  by = .(area_fips, year)
-][
-  , # no row operations
-  `:=`(
-    pct_chg_us_ttl_chg = cnty_ttl_chg / sum(cnty_ttl_chg, na.rm = TRUE),
-    pct_upl_chg = cnty_upl_chg / sum(cnty_upl_chg, na.rm = TRUE),
-    pct_pma_chg = cnty_pma_chg / sum(cnty_pma_chg, na.rm = TRUE),
-    pct_upl_mill_chg = up_mill_chg / ttl_mills_chg,
-    pct_pma_mill_chg = pma_mill_chg / ttl_mills_chg
-  ),
-  by = year
-][
-  , # no row operations
-  `:=`(
-    chg_upl_wrt_chg_upl_mills = pct_upl_chg / pct_upl_mill_chg,
-    chg_pma_wrt_chg_pma_mills = pct_pma_chg / pct_upl_mill_chg
-  )
-]
-
-tx_ca_comp_unq <- unique(tx_ca_comp)
-
-tx_ca_comp_unq <- left_join(
+ca_tx_comp_shp <- left_join(
   county_shapes,
-  tx_ca_comp_unq,
+  ca_tx_comp,
   by = "area_fips"
 )
 
 
-tx_data <- tx_ca_comp_unq[
-  tx_ca_comp_unq$STUSPS == "TX",
+tx_data <- ca_tx_comp_shp[
+  ca_tx_comp_shp$STUSPS == "TX",
   # no col ops
 ]
 
-ca_data <- tx_ca_comp_unq[
-  tx_ca_comp_unq$STUSPS == "CA",
+ca_data <- ca_tx_comp_shp[
+  ca_tx_comp_shp$STUSPS == "CA",
   # no col ops
 ]
 
 
 tx_map <- tm_shape(tx_data) +
   tm_polygons(
-    fill = "chg_upl_wrt_chg_upl_mills",
+    fill = "indx_uplnd",
     fill.scale = tm_scale_continuous(),
     fill.legend = tm_legend(
-      title = "Change in Share of Planted Upland Cotton Acres to Change in Share of Domestic Use",
+      title = "Change in Upland Prouduction Sensitivity to Domestic Upland Demand",
       orientation = "landscape",
       position = tm_pos_out("center", "top", pos.h = "center")
     )
@@ -184,10 +206,10 @@ print(tx_map)
 
 ca_map <- tm_shape(ca_data) + 
   tm_polygons(
-    fill = "chg_pma_wrt_chg_pma_mills",
+    fill = "indx_pima",
     fill.scale = tm_scale_continuous(),
     fill.legend = tm_legend(
-      title = "Change in Share of Planted ELS Cotton Acres to Change in Share of Domestic Use",
+      title = "Change in Pima Production Sensitivity to Domestic Pima Demand",
       orientation = "landscape",
       position = tm_pos_out("center", "top", pos.h = "center")
     )
@@ -201,7 +223,7 @@ print(ca_tx_comp)
 
 tmap_save(
   ca_tx_comp,
-  filename = file.path(fig,"ca_tx_acres_to_usage.png"),
+  filename = file.path(fig,"ca_tx_prod_to_usage.png"),
   width = 7,
   height = 5,
   dpi = 300
