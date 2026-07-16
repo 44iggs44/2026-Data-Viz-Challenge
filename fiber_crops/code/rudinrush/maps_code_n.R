@@ -62,7 +62,7 @@ county_shapes <- county_shapes |>
 # load cotton production data
 cttn_pdctn <- fread(
   file = file.path(
-    data, "cotton_data", "refined" ,"cotton_prod_use.csv"
+    refined, "cotton_prod_use.csv"
   ),
   colClasses = list(character = "area_fips")
 ) |> as.data.table()
@@ -94,8 +94,8 @@ loc_list <- intersect(
 
 # numeric columns and variables to keep
 num_cols <- setdiff( # create list of differences between two sets
-    names(ca_tx_data)[ # first set is the names of the variables that are numeric
-        sapply(ca_tx_data, is.numeric)
+    names(ca_tx_data_2000)[ # first set is the names of the variables that are numeric
+        sapply(ca_tx_data_2000, is.numeric)
     ], c("year", "location_id", "area_fips") # second set is identifying variables
 )
 
@@ -231,43 +231,43 @@ tmap_save(
 
 
 
-
-
-tx_ca_pma_map <-
-  tm_shape(pma_comp) +
-  tm_polygons(
-    fill = "pma_chg_wrt_mill_chg",
-    stroke.alpha = 0,
-    fill.scale = tm_scale_intervals(
-      style = "jenks",
-      n = 10,
-      value.na = "grey75"
-    ),
-    fill.legend = tm_legend(
-      title = "Change in Share of Cotton"
-    )
-  ) +
-  tm_facets( columns = ) + 
-  tm_layout(
-    legend.outside = TRUE,
-    frame = FALSE,
-    bg.color = "grey75"
-  ) +
-  tm_shape(state_shapes) +
-  tm_borders(col = "black",
-             lwd = 2) +
-  tm_options(legend.na.show = FALSE)
-
-print(tx_ca_pma_map)
-
-
-tmap_save(
-  tx_ca_pma_map,
-  filename = file.path(fig,"pma_cali_ELS_chg_area.png"),
-  width = 7,
-  height = 5,
-  dpi = 300
-)
-
+# 
+# 
+# tx_ca_pma_map <-
+#   tm_shape(pma_comp) +
+#   tm_polygons(
+#     fill = "pma_chg_wrt_mill_chg",
+#     stroke.alpha = 0,
+#     fill.scale = tm_scale_intervals(
+#       style = "jenks",
+#       n = 10,
+#       value.na = "grey75"
+#     ),
+#     fill.legend = tm_legend(
+#       title = "Change in Share of Cotton"
+#     )
+#   ) +
+#   tm_facets( columns = ) + 
+#   tm_layout(
+#     legend.outside = TRUE,
+#     frame = FALSE,
+#     bg.color = "grey75"
+#   ) +
+#   tm_shape(state_shapes) +
+#   tm_borders(col = "black",
+#              lwd = 2) +
+#   tm_options(legend.na.show = FALSE)
+# 
+# print(tx_ca_pma_map)
+# 
+# 
+# tmap_save(
+#   tx_ca_pma_map,
+#   filename = file.path(fig, "pma_cali_ELS_chg_area.png"),
+#   width = 7,
+#   height = 5,
+#   dpi = 300
+# )
+# 
 
 ## END ##
