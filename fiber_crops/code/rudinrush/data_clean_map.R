@@ -25,16 +25,16 @@
 # - 0 setup
 ########################################################################
 
-# data file path
-data <- file.path(
-    "", "Users", "Izz2", "Library", "CloudStorage",
-    "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
-)
-
-# figures folder
-fig <- file.path(
-    data, "figures"
-)
+# # data file path
+# data <- file.path(
+#     "", "Users", "Izz2", "Library", "CloudStorage",
+#     "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
+# )
+# 
+# # figures folder
+# fig <- file.path(
+#     data, "figures"
+# )
 
 # get county shapes
 us_counties <- counties(cb = TRUE, year = 2024, class = "sf")
@@ -56,7 +56,7 @@ county_shapes <- county_shapes |>
 # load cotton data
 cotton_df <- fread(
     file = file.path(
-        data, "cotton_data", "refined", "cotton_harmonized.csv"
+        refined, "cotton" ,"cotton_harmonized.csv"
     ),
     colClasses = list(character = "area_fips")
 )
@@ -70,17 +70,14 @@ setnafill(cotton_df, type = "const", fill = 0, cols = num_cols)
 # full manufacturing data
 cttn_mftr <- fread(
     file = file.path(
-        data, "cotton_data", "refined", "cttn_mftr.csv"
+        refined,"cttn_mftr.csv"
     ),
     colClasses = list(character = "area_fips")
 )
 
 # cotton demand data
 cttn_dmnd <- fread(
-    file = file.path(
-        data, "cotton_data", "cotton_export_mill_use", 
-            "US-Cotton-Supply-and-Demand.csv"
-    )
+    file = file.path( cotton, "ers", "us-cotton-supply-and-demand.csv" )
 ) |>
     lapply( # forces strings to lowercase for consistency
         function(col) { # applies function to columns
@@ -383,7 +380,7 @@ ctn_data_unq[
 fwrite(
     ctn_data_unq,
     file = file.path(
-        data, "cotton_data", "refined", "cotton_prod_use.csv"
+        refined, "cotton_prod_use.csv"
     )
 )
 
