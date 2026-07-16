@@ -2,17 +2,14 @@
 
 library(here)
 
-# Download location
+# Local directory for downloaded annual BLS QCEW files
 download_dir <- here(
-  raw, # sets path to raw files
-  
+  "fiber_crops",
+  "enyetornye",
+  "data",
+  "raw"
 )
 
-dir.create(
-  download_dir,
-  recursive = TRUE,
-  showWarnings = FALSE
-)
 
 # Download and extract all annual by-industry files
 for (year in 1990:2025) {
