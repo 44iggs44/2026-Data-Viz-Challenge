@@ -2,20 +2,20 @@
 # Created on: 01 Jul 2026
 # Created by: lirr
 # Edited by: lirr
-# Last edit: 01 Jul 2026
+# Last edit: 16 Jul 2026
 # R version 4.5.2
 
 # note:
     # LLM was used for code assistance # nolint: indentation_linter.
-    # dataset last downloaded on: 01 July 2026
+    # dataset first downloaded on: 01 July 2026
 
 # assumes:
-    # you have run project_DVC # nolint: indentation_linter.
+    # you have run project_DataViz_fiber_team.R
     # files are downloaded to a specific folder path
 
 
 # does:
-    # cleans data sets downloaded from project_DVC # nolint: indentation_linter.
+    # cleans data sets downloaded from project_DVC
     # harmonizes with manufacturing data
 
 # to do:
@@ -26,11 +26,15 @@
 ########################################################################
 
 
-# data file path
-data <- file.path(
-    "", "Users", "Izz2", "Library", "CloudStorage",
-    "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
-)
+# # data file path
+# file pathshoud
+# data <- file.path(
+#     "", "Users", "Izz2", "Library", "CloudStorage",
+#     "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
+# )
+
+# set file path for nass
+nass <- file.path(cotton, "nass")
 
 ########################################################################
 # - 1 load cotton data
@@ -38,18 +42,16 @@ data <- file.path(
 
 # get list of files from OneDrive
 data_list <- list.files(
-    path = file.path(
-        data, "cotton_data","raw"
-    ),
+    path = nass,
     pattern = "\\.csv$",
     full.names = TRUE
 )
 
 # create master cotton data table
-cotton <- lapply(data_list, fread)
+cotton_data <- lapply(data_list, fread)
 
 # rename the sub tables to match the file names
-names(cotton) <- basename(data_list)
+names(cotton_data) <- basename(data_list)
 
 
 ########################################################################
@@ -59,7 +61,7 @@ names(cotton) <- basename(data_list)
 # create manufacturing dataset
 fib_naics <- fread(
     file = file.path(   
-            data, "master_data", "fiber_manufacturing_all.csv"
+            refined, "manufacturing", "fiber_manufacturing_all.csv"
         )
 )
 
@@ -74,8 +76,8 @@ fib_naics <- fread(
 ########################################################################
 
 # create location id for the cotton datasets
-cotton <- lapply(
-    cotton, # selects dataset to apply function to
+cotton_data <- lapply(
+    cotton_data, # selects dataset to apply function to
     function(dt) { #function that creates location identifier
         dt[
            , # no row operations 
@@ -92,7 +94,7 @@ loc_vars <- c(
     "county_code", "county_name"
 )
 
-locations <- cotton |>
+locations <- cotton_data |>
     # Explicitly keep only the columns in loc_vars and drop everything else
     map(~ select(.x, any_of(loc_vars))) |>
     bind_rows() |>
@@ -100,27 +102,27 @@ locations <- cotton |>
     distinct()
 
 # subset gin counts from cotton
-gin_counts <- cotton[["gin_counts.csv"]]
+gin_counts <- cotton_data[["gin_counts.csv"]]
     # obs == 4483
 
 # subset harvested acres "
-hrvstd_acrg <- cotton[["harvested_acres.csv"]]
+hrvstd_acrg <- cotton_data[["harvested_acres.csv"]]
     # obs == 45817
 
 # subset planted acres "
-plntd_acrg <- cotton[["planted_acres.csv"]]
+plntd_acrg <- cotton_data[["planted_acres.csv"]]
     # obs == 16376
 
 # subset production bales
-bales <- cotton[["bales_produced.csv"]]
+bales <- cotton_data[["bales_produced.csv"]]
     # obs == 27468
 
 # subset sales
-sales <- cotton[["sales.csv"]]
+sales <- cotton_data[["sales.csv"]]
     # obs == 12582
 
 # subset cotton yield
-yield <- cotton[["yield.csv"]]
+yield <- cotton_data[["yield.csv"]]
     # obs == 16369
 
 # drop missing values
@@ -413,42 +415,42 @@ cotton_mnfctr <- full_join(
 # writ out csv for break time and let others use data
 fwrite(
     gin_counts,
-    file.path(data,"cotton_data","refined","gin_counts.csv")
+    file.path(refined, "cotton", "gin_counts_clean.csv")
 )
 
 fwrite(
     hvstd_clean,
-    file.path(data,"cotton_data","refined","harvested_acres_clean.csv")
+    file.path(refined, "cotton", "harvested_acres_clean.csv")
 )
 
 fwrite(
     plntd_clean,
-    file.path(data,"cotton_data", "refined", "planted_acres_clean.csv")
+    file.path(refined, "cotton", "planted_acres_clean.csv")
 )
 
 fwrite(
     bales_clean,
-    file.path(data,"cotton_data","refined","bales_clean.csv")
+    file.path(refined, "cotton", "bales_clean.csv")
 )
 
 fwrite(
     sales_clean,
-    file.path(data,"cotton_data","refined","sales_clean.csv")
+    file.path(refined, "cotton", "sales_clean.csv")
 )
 
 fwrite(
     yield_clean,
-    file.path(data,"cotton_data","refined","yield_clean.csv")
+    file.path(refined, "cotton", "yield_clean.csv")
 )
 
 fwrite(
     cotton_df,
-    file.path(data,"cotton_data","refined","cotton_harmonized.csv")
+    file.path(refined, "cotton", "cotton_harmonized.csv")
 )
 
 fwrite(
     cotton_mnfctr,
-    file.path(data, "cotton_data", "refined", "cttn_mftr.csv")
+    file.path(refined, "manufacturing", "cttn_mftr.csv")
 )
 
 

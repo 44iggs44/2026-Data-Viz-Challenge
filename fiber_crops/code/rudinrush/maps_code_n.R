@@ -24,16 +24,16 @@
 # - 0 setup
 ########################################################################
 
-# data file path
-data <- file.path(
-  "", "Users", "Izz2", "Library", "CloudStorage",
-  "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
-)
-
-# figures folder
-fig <- file.path(
-  data, "figures"
-) 
+# # data file path
+# data <- file.path(
+#   "", "Users", "Izz2", "Library", "CloudStorage",
+#   "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
+# )
+# 
+# # figures folder
+# fig <- file.path(
+#   data, "figures"
+# ) 
 
 
 ########################################################################
@@ -270,8 +270,4 @@ tmap_save(
 )
 
 
-
-
-
-
-
+## END ##
