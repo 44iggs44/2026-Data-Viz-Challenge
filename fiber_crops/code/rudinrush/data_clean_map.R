@@ -70,7 +70,9 @@ setnafill(cotton_df, type = "const", fill = 0, cols = num_cols)
 # full manufacturing data
 cttn_mftr <- fread(
     file = file.path(
-        refined,"cttn_mftr.csv"
+        refined,
+        "manufacturing",
+        "cttn_mftr.csv"
     ),
     colClasses = list(character = "area_fips")
 )
