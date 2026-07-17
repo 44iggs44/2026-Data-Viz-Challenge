@@ -14,7 +14,7 @@ Last edit: 16 Jul 2026
 
 The US cotton and textile sector has changed shape over recent decades.
 The US remains one of the world's largest cotton producers and exporters, shipping most of its crop abroad, while domestic textile and apparel manufacturing has declined, and demand is now met largely through imports (about $107.7 billion in 2024).
-This project tracks how the balance between US cotton production and domestic mill use has shifted across California and Texas, and what the gap between them, visible both regionally and in the fiber embodied in imports, reveals about the challenges and opportunities facing the sector.
+This project tracks how the balance between US cotton production and domestic mill use in cotton has shifted across California and Texas, and what the gap between them, visible both regionally, reveals about the challenges and opportunities facing the sector.
 This aligns with the Local and Regional Food Division's priorities on business viability and market access: mapping the locations of production and processing shows which regional businesses are most exposed and where domestic demand could be recaptured.
 
 ## Data Sources
