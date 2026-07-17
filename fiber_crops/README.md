@@ -172,9 +172,38 @@ I'm still a bit unsure of where the data for these files came from, was it from 
 <!---> 
 <\small>
 
-### Code details
 
-#### 
+### Code Details
+
+#### Folder structure of code
+
+```text
+| |___code
+| | |___rudinrush
+| | | |___nass_download.R
+| | | |___cotton_harmonization.R
+| | | |___data_clean_map.R
+| | | |___maps_code_n.R
+| | | |___old_code
+| | | | |___state_period_comparison_map.R
+| | | | |___code_graveyard.R
+| | | | |___function_test.R
+| | |___enyetornye
+| | | |___manufacturing_trend.R
+| | | |___manufacturing_data_download.R
+| | | |___data_cleaning.R
+| | | |___Fame_fiber.Rproj
+| | | |___readme.docx
+| | |___ikeme
+| | | |___ERS_cotton.R
+| | |___project_DataViz_fiber_team.R
+| | |___project_DVC.R
+```
+
+#### In-depth code explanations
+
+The rudinrush folder contains code authored mainly by Lorin Rudin-Rush.
+The ```nass_download.R``` file requires an API and there is a prompt that
 
 
 

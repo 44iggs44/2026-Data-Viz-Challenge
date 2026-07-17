@@ -49,7 +49,7 @@ if (length(missing)) install.packages(missing)
 invisible(lapply(packages, library, character.only = TRUE))
 
 # set nass api
-api_code <- read_lines("../usda_api.txt") # reads in nass api code locally
+api_code <- read_lines("./api_input/usda_api.txt") # reads in nass api code locally
 nassqs_auth(api_code) # authenticates key
 
 

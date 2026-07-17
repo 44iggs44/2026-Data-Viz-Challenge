@@ -104,7 +104,7 @@ if (!dir.exists(api_input)) {
             # create directory
             dir.create(api_input, recursive = TRUE)
             # ask to input api
-            api < toString(
+            api <- toString(
                 readline(
                     prompt = "Please input api: "
                 )
@@ -115,9 +115,10 @@ if (!dir.exists(api_input)) {
                 
                 # create file and folder path
                 writeLines(api, con = file.path(api_input, "usda_api.txt"))
+                break
             
             } else { 
-                warning("Please input valid api (may involve changing code around lines 114 in project~.R)")
+                message("Please input valid api (may involve changing code around lines 114 in project~.R)")
                 break
             }
         } else {
