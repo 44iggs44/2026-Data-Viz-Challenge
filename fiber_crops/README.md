@@ -221,9 +221,6 @@ It creates the index variable described in the write up.
 
 
 
-
-
-
 ## Other Stuff?
 
 [QCEW: Quarterly Census of Employment and Wages](https://www.bls.gov/cew/downloadable-data-files.htm)
@@ -234,19 +231,18 @@ It creates the index variable described in the write up.
 ## AI Disclaimer
 
 **Lorin Rudin-Rush:**
-LLM Usage: I used generative AI for coding assistance.
+LLM Usage: 
+I used generative AI for coding assistance.
 Most of the time this was for quick debugging.
 When I found that I was spending a lot of time on an problem or task, I would submit code and error to either antigravity or through the github copilot via VSCode or even google search.
-The generative AI was usually helpful in code suggestions and identifying code issues or oversights.
-It was not always helpful.
 When I was trying to get it to do larger tasks even with agentic models I ran into some issues.
 I do not use much generative AI in my day-to-day workflow and the lack of experience in prompts may have limited the effectiveness for certain tasks.
-On the other hand, after I created the state comparison maps in the R package tmap as a proof of concept, I was having difficulties quickly translating the tmap code to ggplot2 code.
+On the other hand, after I created the state comparison maps in the R package tmap as a proof of concept.
+I was having difficulties quickly translating the tmap code to ggplot2 code.
 I copy and pasted the tmap code into a basic google search and asked it to match the formatting and style of Freedom's map created in the file manufacturing_trend_2.R.
-This ran immediately and I only needed to make minor edits to the labels and titles.
 Previous attempts at map translation can be seen in the old_code folder.
 These were experiments and I was trying to find code that I could cannibalize to better learn ggplot2.
 Using google antigravity and I believe codex/claude in github copilot, I got suggestions for code to build the map we agreed on.
 I could not get these to work, I assume it was user error.
-I thought it would be easier to continue creating the tmap object than to go line by line and figure out what was wrong with the agentic
+
 
