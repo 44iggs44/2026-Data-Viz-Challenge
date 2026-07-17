@@ -1,18 +1,18 @@
 
-# 
-# library(httr)
-# library(jsonlite)
-# library(dplyr)
-# library(purrr)
-# library(readr)
+
+library(httr)
+library(jsonlite)
+library(dplyr)
+library(purrr)
+library(readr)
 
 # ==============================================================================
 # Output and imports in US DOLLARS for textile industries (NAICS 313, 314, 315)
 #
 
 # include AIS keys
-census_key <- ""   # https://api.census.gov/data/key_signup.html
-fred_key   <- ""     # https://fred.stlouisfed.org/docs/api/api_key.html
+census_key <- "32514956a9d5e79bc7d1bb3437726ff7627c7d22"   # https://api.census.gov/data/key_signup.html
+fred_key   <- "2e50d059cd97db9577407e4a1a076653"     # https://fred.stlouisfed.org/docs/api/api_key.html
 # ==============================================================================
 # data obtained from 
 #
@@ -20,11 +20,11 @@ fred_key   <- ""     # https://fred.stlouisfed.org/docs/api/api_key.html
 #   2)  imports 1997-2025  -> USITC DataWeb (general imports, nominal $)..
 # ==============================================================================
 
-# library(dplyr)
-# library(readr)
-# library(stringr)
+library(dplyr)
+library(readr)
+library(stringr)
 
-#setwd("/data/sikeme/data_visualization")
+setwd("/data/sikeme/data_visualization")
 
 naics_label <- c("313" = "Textile mills",
                  "314" = "Textile product mills",
@@ -34,7 +34,7 @@ naics_label <- c("313" = "Textile mills",
 # 1): OUTPUT in dollars from NBER-CES
 # ----------------------------------------------------------------------------
 
-nberces <-  read_csv(file = file.path(refined, "/textile_industry_output_import/nberces5818v1_n2012.csv"))
+nberces <-  read_csv("data_visualization/data/nberces5818v1_n2012.csv")
 
 output <- nberces %>%
   mutate(naics3 = str_sub(as.character(naics), 1, 3)) %>%
@@ -55,14 +55,14 @@ output <- nberces %>%
   ) %>%
   filter(year >= 1990)
 
-write_csv(output, file = file.path(refined, "/textile_industry_output_import/textile_output_dollars_1990_2018.csv"))
+write_csv(output, "textile_output_dollars_1990_2018.csv")
 
 # ----------------------------------------------------------------------------
 # 2) IMPORTS in dollars from USITC DataWeb
 # ----------------------------------------------------------------------------
 
 library(readxl)
-imports_raw <- read_excel(file = file.path(refined, "/textile_industry_output_import/dataweb_textile_imports.xlsx"), 
+imports_raw <- read_excel("data_visualization/data/dataweb_textile_imports.xlsx", 
                                       sheet = "General Customs Value")
 names(imports_raw)  # <- your exported file
 imports_raw <- imports_raw %>% filter(`NAIC Number` %in% c(313, 314, 315))
@@ -90,9 +90,9 @@ combined <- bind_rows(
   arrange(naics, series, year)
 
 table(combined$naics,combined$industry)
-#combined <- combined %>% dplyr::recode()
+combined <- combined %>% recode()
 
-write_csv(combined, file = file.path(refined, "/textile_industry_output_import/textile_output_imports_dollars.csv")
+write_csv(combined, "data_visualization/data/textile_output_imports_dollars.csv")
 print(head(combined)); print(tail(combined))
 
 ###############################################################################
@@ -120,7 +120,7 @@ p <- ggplot(plot_data, aes(x = year, y = value, color = series_label)) +
   theme(legend.position = "top",
         strip.text = element_text(face = "bold"))
 p
-ggsave("/Users/Izz2/Documents/GitHub/2026-Data-Viz-Challenge/fiber_crops/figures/textile_output_vs_imports.png", p, width = 8, height = 10, dpi = 300)
+ggsave("data_visualization/plots/textile_output_vs_imports.png", p, width = 8, height = 10, dpi = 300)
 print(p)
 
 

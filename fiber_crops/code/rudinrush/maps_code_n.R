@@ -225,5 +225,96 @@ tmap_save(
   dpi = 300
 )
 
+ca_map_gg <- ggplot(data = ca_data) +
+    geom_sf(aes(fill = indx_pima), color = "grey35", linewidth = 0.15) +
+    scale_fill_viridis_c(
+        name = NULL, # Handled in the panel title/subtitle
+        labels = label_number(accuracy = 0.1),
+        guide = guide_colorbar(
+            direction = "horizontal",
+            barwidth = 18,
+            barheight = 0.4,
+            title.position = "top"
+        )
+    ) +
+    labs(
+        title = "California Pima Production Sensitivity",
+        subtitle = "Change in Pima production sensitivity to domestic Pima demand."
+    ) +
+    theme_minimal(base_size = 11) +
+    theme(
+        plot.title = element_text(size = 13, face = "bold"),
+        plot.subtitle = element_text(size = 9.5, color = "grey35"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(), # Keeps map canvas perfectly clean
+        legend.position = "bottom",
+        legend.text = element_text(size = 8.5)
+    )
+
+
+
+tx_map_gg <- ggplot(data = tx_data) +
+    geom_sf(aes(fill = indx_uplnd), color = "grey35", linewidth = 0.15) +
+    scale_fill_viridis_c(
+        name = NULL,
+        labels = label_number(accuracy = 0.1),
+        guide = guide_colorbar(
+            direction = "horizontal",
+            barwidth = 18,
+            barheight = 0.4,
+            title.position = "top"
+        )
+    ) +
+    labs(
+        title = "Texas Upland Production Sensitivity",
+        subtitle = "Change in Upland production sensitivity to domestic Upland demand."
+    ) +
+    theme_minimal(base_size = 11) +
+    theme(
+        plot.title = element_text(size = 13, face = "bold"),
+        plot.subtitle = element_text(size = 9.5, color = "grey35"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        legend.position = "bottom",
+        legend.text = element_text(size = 8.5)
+    )
+
+figure_title <- ggdraw() +
+    draw_label(
+        "Regional Cotton Production Sensitivity Analysis Across States",
+        x = 0.01, y = 0.72, hjust = 0, fontface = "bold", size = 16
+    ) +
+    draw_label(
+        "Comparison of California Pima and Texas Upland domestic demand sensitivity metrics.",
+        x = 0.01, y = 0.25, hjust = 0, size = 10.5, color = "grey35"
+    )
+
+figure_caption <- ggdraw() +
+    draw_label(
+        paste0(
+            "Note: Values represent continuous indexed sensitivity metrics mapped at regional boundaries.\n",
+            "Sources: USDA Economic Research Service (ERS) Cotton and Wool Outlook Reports."
+        ),
+        x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, size = 8, lineheight = 1.2, color = "black"
+    )
+
+spatial_comparison_combined <- plot_grid(
+    figure_title,
+    plot_grid(
+        ca_map_gg,
+        tx_map_gg,
+        nrow = 1,
+        rel_widths = c(1, 1),
+        align = "h",
+        axis = "tb"
+    ),
+    figure_caption,
+    ncol = 1,
+    rel_heights = c(0.15, 1, 0.1) # Allocates clean visual margins
+)
+
+# Print final dashboard layout
+print(spatial_comparison_combined)
+
 
 ## END ##

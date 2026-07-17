@@ -31,9 +31,10 @@
 # list of packages
 packages <- c(
     "arrow", "assertthat", "Cairo", "countrycode" ,"cowplot" , "data.table",
-    "did2s", "dplyr", "fixest", "fst", "ggplot2", "haven", "here", "lubridate",
-    "maps", "patchwork", "RColorBrewer", "readr", "readxl" ,"rnassqs", "scales",
-    "sf", "stringi","stringr", "tidyverse", "tigris", "tmap", "vroom"
+    "did2s", "dplyr", "fixest", "fst", "ggplot2", "haven", "here", "httr", 
+    "jsonlite", "lubridate", "maps", "patchwork", "RColorBrewer", "purrr",
+    "readr", "readxl" ,"rnassqs", "scales", "sf", "stringi","stringr",
+    "tidyverse", "tigris", "tmap", "vroom"
 )
 
 # check for missing packages 
@@ -119,7 +120,6 @@ if (!dir.exists(api_input)) {
             
             } else { 
                 message("Please input valid api (may involve changing code around lines 114 in project~.R)")
-                break
             }
         } else {
             warning("Please get api and save to file in new folder as follows ./api_input/usda_api.txt folder")
@@ -279,8 +279,21 @@ if (!dir.exists(file.path(refined, "cotton"))) {
     
 } else {
     
-    message("Files already exist")
+    message("Files already exist, please check file names")
     
+}
+
+if (!file.exists(
+    file.path(
+        refined,
+        "textile_industr_output_import",
+        "textile_output_imports_dollars.csv"
+        )
+    )
+) {
+    source(file.path(code, "ikeme", "output_import_textile.R"))
+} else  {
+    message("File already exists please check file names")
 }
 
 # check for production use file for map data
