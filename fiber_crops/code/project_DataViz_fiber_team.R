@@ -96,20 +96,20 @@ if (!dir.exists(api_input)) {
         )
     )
     
-    # check for valid choice
-    if (ans %in% allowed) {
+        # check for valid choice
+        if (ans %in% allowed) {
         
-        # moves on when answer is y
-        if (ans == "y") {
+            # moves on when answer is y
+            if (ans == "y") {
             
-            # create directory
-            dir.create(api_input, recursive = TRUE)
-            # ask to input api
-            api <- toString(
-                readline(
-                    prompt = "Please input api: "
+                # create directory
+                dir.create(api_input, recursive = TRUE)
+                # ask to input api
+                api <- toString(
+                    readline(
+                        prompt = "Please input api: "
+                    )
                 )
-            )
             
             # check if valid api  (ASSUMES APIs are all 36 characters including dashes)
             if ( nchar(api) == 36) {
@@ -117,13 +117,12 @@ if (!dir.exists(api_input)) {
                 # create file and folder path
                 writeLines(api, con = file.path(api_input, "usda_api.txt"))
                 break
-            
             } else { 
                 message("Please input valid api (may involve changing code around lines 114 in project~.R)")
             }
-        } else {
-            warning("Please get api and save to file in new folder as follows ./api_input/usda_api.txt folder")
-            break
+            } else {
+                # stops and sets message
+                stop("Please get api and save to file in new folder as follows ./api_input/usda_api.txt folder")
         } 
     } else {
         cat("Invalid entry please type 'y' or 'n'. \n")
@@ -201,13 +200,9 @@ if (!file.exists(file.path(refined, "manufacturing","fiber_manufacturing_all.csv
         }
             break # 
         }
-    
     # error message
         cat("Invalid entry, please type 'y' or 'n'.\n")
     }
-    
-
-    
 } else {
     message("Files unneeded or skipped")
 }
@@ -309,17 +304,10 @@ if (!file.exists(file.path(refined, "cotton_prod_use.csv"))) {
 ########################################################################
 
 # check for existence of figure file if doesn't exist run file
-if (!file.exists(file.path(fig, "trade_activity_combined.png"))) {
-    source(file.path(code, "enyetornye", "manufacturing_trend_2.R"))
-} else {
-    message("File already exists")
-}
+source(file.path(code, "enyetornye", "manufacturing_trend_2.R"))
 
 # check for existence of map
-if (!file.exists(file.path(fig, "pma_cali_ELS_chg_area.png"))) {
-    source(file.path(code, "rudinrush", "maps_code_n.R"))
-} else {
-    message("File already exists")
-}
+source(file.path(code, "rudinrush", "maps_code_n.R"))
 
 
+## END ##

@@ -55,14 +55,14 @@ output <- nberces %>%
   ) %>%
   filter(year >= 1990)
 
-write_csv(output, file = file.path(refined, "/textile_industry_output_import/textile_output_dollars_1990_2018.csv"))
+write_csv(output, file = file.path(refined, "textile_industry_output_import/textile_output_dollars_1990_2018.csv"))
 
 # ----------------------------------------------------------------------------
 # 2) IMPORTS in dollars from USITC DataWeb
 # ----------------------------------------------------------------------------
 
 library(readxl)
-imports_raw <- read_excel(file = file.path(refined, "/textile_industry_output_import/dataweb_textile_imports.xlsx"), 
+imports_raw <- read_excel(path = file.path(refined, "textile_industry_output_import/dataweb_textile_imports.xlsx"), 
                                       sheet = "General Customs Value")
 names(imports_raw)  # <- your exported file
 imports_raw <- imports_raw %>% filter(`NAIC Number` %in% c(313, 314, 315))
@@ -92,7 +92,7 @@ combined <- bind_rows(
 table(combined$naics,combined$industry)
 #combined <- combined %>% dplyr::recode()
 
-write_csv(combined, file = file.path(refined, "/textile_industry_output_import/textile_output_imports_dollars.csv")
+write_csv(combined, file = file.path(refined, "/textile_industry_output_import/textile_output_imports_dollars.csv"))
 print(head(combined)); print(tail(combined))
 
 ###############################################################################

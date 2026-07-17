@@ -266,7 +266,8 @@ figure_caption <- ggdraw() +
             "Note: Values represent a sensitivity index cotton production to changes in domestic mill use.\n", 
             "The numerator is the change in each county's share of domestic cotton production for pima in California and upland in Texas in thousands of bales between the years 2020 and 2000.\n", 
             "The denominator is the change in mill usage in thousands of bales of pima cotton for the California index values and upland cotton for the Texas index values between the years 2020 and 2000.\n",
-            "Sources: USDA Economic Research Service (ERS) Cotton and Wool Outlook Reports."
+            "Sources: USDA Economic Research Service (ERS) Cotton and Wool Outlook Reports.\n",
+            "AI Disclaimer: Lorin used generative AI to translate tmap code to ggplot2 code."
         ),
         x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, size = 8, lineheight = 1.2, color = "black"
     )
