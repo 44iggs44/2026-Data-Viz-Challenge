@@ -34,7 +34,7 @@ What it contains: annual total cotton bales produced in thousands of bales, annu
 Source: NASS Quickstats
 
 Access: [Api code](https://quickstats.nass.usda.gov/api) is required.
-After obtaining API key save a copy in usda_api.txt or input directly into the function nassqs_auth() before running the project_DVC.R file.
+After obtaining API key, you may input the key when prompted after running the project_DataViz_fiber_team.R file, write a copy of your api code to a text file and save it within a folder called "api_input", or input the code directly into the function nassqs_auth() of the nass_download.R file before running the project_DataViz_fiber_team.R file.
 
 What it contains: County level cotton production data in acres and bales.
 
@@ -82,6 +82,7 @@ What it contains: Establishment counts and employment/wage data at the county or
 ```text
 |___fiber_crops
 | |___Archive.zip
+| |___CITATION.cff
 | |___code
 | | |___rudinrush
 | | |___enyetornye
@@ -104,6 +105,7 @@ After opening the Archive.zip file there should be three folders labelled figure
 The folder structure should **now** look like this:
 ```text
 |___fiber_crops
+| |___CITATION.cff
 | |___code
 | | |___rudinrush
 | | |___enyetornye
@@ -139,6 +141,7 @@ The resulting folder structure should **now** look like this:
 
 ```text
 |___fiber_crops
+| |___CITATION.cff
 | |___code
 | | |___rudinrush
 | | |___enyetornye
@@ -165,6 +168,7 @@ The resulting folder structure should **now** look like this:
 
 ```text
 | |___code
+| |___CITATION.cff
 | | |___rudinrush
 | | | |___nass_download.R
 | | | |___cotton_harmonization.R
@@ -214,7 +218,7 @@ ERS_cotton.R: dowloads cotton ERS data (national supply, demand, as well as pric
 output_import_textile.R: clean up data on textile naics 3 digits import and output data value at the industry level over time. The data contains as well in comment some quick data staticts and plots to visualize trends better.
 
 
-## Other Stuff?
+## Extraneous Links To Data
 
 [QCEW: Quarterly Census of Employment and Wages](https://www.bls.gov/cew/downloadable-data-files.htm)
 [Dictionary](https://www.bls.gov/cew/about-data/downloadable-file-layouts/annual/naics-based-annual-layout.htm)
