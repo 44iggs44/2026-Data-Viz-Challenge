@@ -217,6 +217,10 @@ manufacturing_data_download.R: downloads annual BLS QCEW manufacturing files for
 manufacturing_data_cleaning.R: selects the relevant textile and fiber-related NAICS industries and creates the harmonized manufacturing dataset.
 manufacturing_trend.R: creates the visualization comparing textile output, imports, cotton-equivalent imports, employment, and establishments.
 
+**Sionegael Ikeme:**
+
+ERS_cotton.R: dowloads cotton ERS data (national supply, demand, as well as prices). The data also has in comment some quick data staticts and plots to visualize trends better.
+output_import_textile.R: clean up data on textile naics 3 digits import and output data value at the industry level over time. The data contains as well in comment some quick data staticts and plots to visualize trends better.
 
 
 ## Other Stuff?
