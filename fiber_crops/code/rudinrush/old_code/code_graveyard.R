@@ -1038,3 +1038,52 @@ fwrite(
 # 
 # 
 # 
+
+
+
+
+
+
+
+
+
+
+
+
+# tx_map <- tm_shape(tx_data) +
+#   tm_polygons(
+#     fill = "indx_uplnd",
+#     fill.scale = tm_scale_continuous(),
+#     fill.legend = tm_legend(
+#       title = "Change in Upland Prouduction Sensitivity to Domestic Upland Demand",
+#       orientation = "landscape",
+#       position = tm_pos_out("center", "top", pos.h = "center")
+#     )
+#   )
+# 
+# print(tx_map)
+# 
+# ca_map <- tm_shape(ca_data) + 
+#   tm_polygons(
+#     fill = "indx_pima",
+#     fill.scale = tm_scale_continuous(),
+#     fill.legend = tm_legend(
+#       title = "Change in Pima Production Sensitivity to Domestic Pima Demand",
+#       orientation = "landscape",
+#       position = tm_pos_out("center", "top", pos.h = "center")
+#     )
+#   )
+# 
+# print(ca_map)
+# 
+# ca_tx_comp <- tmap_arrange(ca_map, tx_map, ncol = 2)
+# 
+# print(ca_tx_comp)
+# 
+# tmap_save(
+#   ca_tx_comp,
+#   filename = file.path(fig,"ca_tx_prod_to_usage.png"),
+#   width = 7,
+#   height = 5,
+#   dpi = 300
+# )
