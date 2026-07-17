@@ -57,22 +57,58 @@ Data dictionary: (https://www.bls.gov/cew/about-data/downloadable-file-layouts/a
 
 What it contains: Establishment counts and employment/wage data at the county or state level, NAICS-classified, for 313, 314 and 315. Regions include Textile belt : "North Carolina", "South Carolina", "Georgia", "Alabama", "Virginia"
 
+# To recreate the figures there are two options:
+
+## 1. Clone the repository and unzip the compressed file:
+
+### The folder structure should look like this:
+```text
+|___fiber_crops
+| |___Archive.zip
+| |___enyetornye
+| | |___code
+| | |___figures
+| | |___data
+| |___README.md
+```
+The
+
+
+
+## 2. 
+
+### The resulting folder structure should look like this:
+
+```text
+|___fiber_crops
+| |___code
+| | |___rudinrush
+| | | |___old_code
+| | |___enyetornye
+| | |___ikeme
+| | |___project_DataViz_fiber_team.R
+| |___enyetornye
+| | |___code
+| | |___figures
+| | |___data
+| |___README.md
+| |___figures
+| |___refined
+| | |___cotton_prod_use.csv
+| | |___cotton
+| | |___manufacturing
+| |___raw
+| | |___cotton
+| | | |___ers
+| | | |___nass
+| | |___textile_industry_output_import
+| | |___manufacturing
+```
+
+
 
 ## How to use code
 
-First add your file to the lines in  project_DVC.R then run the file.
-To recreate the manufacturing figure run : file.file
-To recreate the maps run maps_code_new
-To doodley bop bip badles
-
-
-## Folder Structure
-
-First run the cotton manufacturing file.
-Then for ach set of raw files not in the folder included are downloaded by running Project_DVC.R.
-Then run the
-After running that file run the cotton harmonization file.
-Then run the maps_
 
 
 

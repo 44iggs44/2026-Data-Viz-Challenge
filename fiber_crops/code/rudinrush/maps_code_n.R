@@ -25,10 +25,7 @@
 ########################################################################
 
 # # data file path
-# data <- file.path(
-#   "", "Users", "Izz2", "Library", "CloudStorage",
-#   "OneDrive-SharedLibraries-WestVirginiaUniversity/Freedom Enyetornye - Fame_fiber"
-# )
+# data <- file.path()
 # 
 # # figures folder
 # fig <- file.path(
@@ -179,7 +176,6 @@ ca_tx_comp_shp <- left_join(
   by = "area_fips"
 )
 
-
 tx_data <- ca_tx_comp_shp[
   ca_tx_comp_shp$STUSPS == "TX",
   # no col ops
@@ -229,45 +225,5 @@ tmap_save(
   dpi = 300
 )
 
-
-
-# 
-# 
-# tx_ca_pma_map <-
-#   tm_shape(pma_comp) +
-#   tm_polygons(
-#     fill = "pma_chg_wrt_mill_chg",
-#     stroke.alpha = 0,
-#     fill.scale = tm_scale_intervals(
-#       style = "jenks",
-#       n = 10,
-#       value.na = "grey75"
-#     ),
-#     fill.legend = tm_legend(
-#       title = "Change in Share of Cotton"
-#     )
-#   ) +
-#   tm_facets( columns = ) + 
-#   tm_layout(
-#     legend.outside = TRUE,
-#     frame = FALSE,
-#     bg.color = "grey75"
-#   ) +
-#   tm_shape(state_shapes) +
-#   tm_borders(col = "black",
-#              lwd = 2) +
-#   tm_options(legend.na.show = FALSE)
-# 
-# print(tx_ca_pma_map)
-# 
-# 
-# tmap_save(
-#   tx_ca_pma_map,
-#   filename = file.path(fig, "pma_cali_ELS_chg_area.png"),
-#   width = 7,
-#   height = 5,
-#   dpi = 300
-# )
-# 
 
 ## END ##
