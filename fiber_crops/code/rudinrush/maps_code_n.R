@@ -267,12 +267,12 @@ figure_caption <- ggdraw() +
     draw_label(
         paste0(
             "Note: Values represent a sensitivity index cotton production to changes in domestic mill use.\n", 
-            "The numerator is the percent change in each county's share of domestic cotton production. for pima in California and upland in Texas in thousands of bales between the years 2020 and 2000.\n", 
-            "The denominator is the percent change in mill usage in thousands of bales of cotton. For the California index values pima cotton is used and upland cotton is used for the Texas index values.\n",
+            "The numerator is the percent change in each county's share of domestic cotton production. Pima in California and Upland in Texas in thousands of bales between the years 2020 and 2000.\n", 
+            "The denominator is the percent change in mill usage in thousands of bales of cotton. For the California index values Pima cotton is used and Upland cotton is used for the Texas index values.\n",
             "Sources: USDA Economic Research Service (ERS) Cotton and Wool Outlook Reports.\n",
             "AI Disclaimer: Lorin used generative AI to translate tmap code to ggplot2 code and match styling."
         ),
-        x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, size = 8, lineheight = 1.2, color = "black"
+        x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, size = 8, lineheight = 1, color = "black"
     )
 
 spatial_comparison_combined <- plot_grid(
@@ -297,7 +297,7 @@ print(spatial_comparison_combined)
 ggsave(
     filename = file.path(
         fig,
-        "ca_tx_prod_to_usage.png"
+        "Fiber_DataVisualization1.png"
     ),
     plot = spatial_comparison_combined,
     width = 15,

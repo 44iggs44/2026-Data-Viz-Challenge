@@ -70,14 +70,14 @@ region_colors <- c(
 #     "data",
 #     "cttn_mftr.csv.zip"
 # )
-# 
+
 # # Create a temporary directory for the extracted CSV
 # manufacturing_temp_dir <- file.path(
 #     tempdir(),
 #     "cttn_mftr"
 # )
-# 
-# 
+
+
 # # Extract the CSV from the ZIP file
 # unzip(
 #     manufacturing_zip,
@@ -236,8 +236,7 @@ data_dir <- file.path(
 # Import textile output and import values
 output_import <- fread(
     file = file.path(
-        refined,
-        "textile_industry_output_import",
+        data_dir,
         "textile_output_imports_dollars.csv"
     )
 ) %>%
@@ -499,8 +498,12 @@ trade_fiber_plot <- ggplot() +
             face = "bold"
         ),
         plot.subtitle = element_text(
-            size = 9.5,
-            color = "grey35"
+            size = 12,
+            color = "black"
+        ),
+        axis.text = element_text(
+            size = 11,
+            color = "black"
         ),
         axis.title.y = element_text(
             size = 10,
@@ -514,7 +517,8 @@ trade_fiber_plot <- ggplot() +
         panel.grid.major.x = element_blank(),
         legend.position = "bottom",
         legend.text = element_text(
-            size = 8.5
+            size = 11,
+            color = "black"
         )
     )
 
@@ -589,8 +593,12 @@ regional_activity_plot <- ggplot(
             face = "bold"
         ),
         plot.subtitle = element_text(
-            size = 9.5,
-            color = "grey35"
+            size = 12,
+            color = "black"
+        ),
+        axis.text = element_text(
+            size = 11,
+            color = "black"
         ),
         axis.title.y = element_text(
             size = 10,
@@ -604,7 +612,8 @@ regional_activity_plot <- ggplot(
         panel.grid.major.x = element_blank(),
         legend.position = "bottom",
         legend.text = element_text(
-            size = 8.5
+            size = 11,
+            color = "black"
         )
     )
 
@@ -626,8 +635,8 @@ figure_title <- ggdraw() +
         x = 0.01,
         y = 0.25,
         hjust = 0,
-        size = 10.5,
-        color = "grey35"
+        size = 13,
+        color = "black"
     )
 
 
@@ -730,7 +739,7 @@ figure_caption <- ggdraw() +
         y = 0.5,
         hjust = 0.5,
         vjust = 0.5,
-        size = 7.9,
+        size = 9,
         lineheight = 1.2,
         color = "black"
     )
@@ -771,7 +780,7 @@ figures_dir <- here(
 ggsave(
     filename = file.path(
         fig,
-        "trade_activity_combined.png"
+        "Fiber_DataVisualization2.png"
     ),
     plot = trade_activity_combined,
     width = 15,
