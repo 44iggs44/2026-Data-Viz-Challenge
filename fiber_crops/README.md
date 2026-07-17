@@ -38,7 +38,16 @@ After obtaining API key save a copy in usda_api.txt or input directly into the f
 
 What it contains: County level cotton production data in acres and bales.
 
-### *Textile Industry Output and Import Data*
+### *Textile Industry Output Data*
+
+Value of shipments (nominal dollars): NBER-CES Manufacturing Database
+
+Access: (www.nber.org/research/data/nber-ces-manufacturing-industry-database)
+
+What it contains: Nominal dollar value of general output for 
+313, 314, and 315
+
+### *Textile Industry Import Data*
 
 General imports (nominal dollars): USITC DataWeb
 
@@ -46,6 +55,14 @@ Access: (https://dataweb.usitc.gov/)
 
 What it contains: Nominal dollar value of general imports for 
 313, 314, and 315
+
+### *Cotton Equivalent Imported Data*
+
+Cotton equivalent imported from textile industries (pounds):USDA ERS
+
+Access: (https://www.ers.usda.gov/data-products/cotton-wool-and-textile-data/raw-fiber-equivalents-of-us-textile-trade-data)
+
+What it contains: Cotton equivalent imported from textile and apparel industries 
 
 ### Labor and Establishment Data
 
