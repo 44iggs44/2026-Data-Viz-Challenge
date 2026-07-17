@@ -29,7 +29,6 @@ urls <- c(
 # Read one table
 us_cotton <- read_csv(urls["us_supply_demand"])
 
-# Or read all of them into a named list
 cotton_data <- lapply(urls, read_csv)
 
 
@@ -39,7 +38,7 @@ library(data.table)
 # Convert each element in place
 cotton_dt <- lapply(cotton_data, as.data.table)
 
-# Access one, e.g.
+# Access each data
 supply <- cotton_dt$us_supply_demand
 prices <- cotton_dt$cotton_prices
 textile_trade <- cotton_dt$us_textile_trade
