@@ -7,8 +7,11 @@
 
 # note:
     # maps
-    # llm was used for code assistance: in this case translating a map from
+    # llm was used for code assistance like typos and debugging. 
+    # I used it in this case to translate a map from
     #   tmap to ggplot and matching aesthetics.
+    #   original code for the tmap map can be seen on lines
+    #   1066-1090 of code_graveyard.R in the rudinrush>old_code folder
 
 
 # assumes:
