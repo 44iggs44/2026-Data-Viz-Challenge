@@ -8,18 +8,16 @@ library(data.table)
 
 # Directory containing the annual QCEW files created by
 # manufacturing_data_download.R
-raw_dir <- here(
-  "fiber_crops",
-  "enyetornye",
-  "data",
-  "raw"
+raw_dir <- file.path(
+    ".",
+    ""
 )
 
 # Directory for the harmonized manufacturing dataset
 data_dir <- here(
   "fiber_crops",
-  "enyetornye",
-  "data"
+  "refined",
+  "manufacturing"
 )
 
 # Textile- and fiber-related NAICS industries

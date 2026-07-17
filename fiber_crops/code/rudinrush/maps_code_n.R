@@ -10,8 +10,10 @@
     # llm was used for code assistance like typos and debugging. 
     # I used it in this case to translate a map from
     #   tmap to ggplot and matching aesthetics.
-    #   original code for the tmap map can be seen on lines
-    #   1066-1090 of code_graveyard.R in the rudinrush>old_code folder
+    #   original code for the tmap map can be seen on lines 
+    #   1066-1090 of code_graveyard.R, along with other unused
+    #   map code in the following directory:
+    #   fiber_crops/code/rudinrush/old_code/code_graveyard.R
 
 
 # assumes:
@@ -94,28 +96,29 @@ loc_list <- intersect(
 
 # get list of var names to rename for differences (make data wide)
 
-# numeric columns and variables to keep
-num_cols <- setdiff( # create list of differences between two sets
-    names(ca_tx_data_2000)[ # first set is the names of the variables that are numeric
-        sapply(ca_tx_data_2000, is.numeric)
-    ], c("year", "location_id", "area_fips") # second set is identifying variables
-)
+    # numeric columns and variables to keep
+    num_cols <- setdiff( # create list of differences between two sets
+        names(ca_tx_data_2000)[ # first set is the names of the variables that are numeric
+            sapply(ca_tx_data_2000, is.numeric)
+        ], 
+        c("year", "location_id", "area_fips") # second set is identifying variables
+    )
 
-# append year value
-var_name_2000 <- paste0(
-    num_cols,
-    "_2000"
-)
+    # append year value
+    var_name_2000 <- paste0(
+        num_cols,
+        "_2000"
+    )
 
-# drop observations not in loc_list
-ca_tx_data_2000<- ca_tx_data_2000[
-    location_id %in% loc_list,
-]
+    # drop observations not in loc_list
+    ca_tx_data_2000<- ca_tx_data_2000[
+        location_id %in% loc_list,
+    ]
 
-ca_tx_data_2020 <- ca_tx_data_2020[
-    location_id %in% loc_list,
-    # no col operations
-]
+    ca_tx_data_2020 <- ca_tx_data_2020[
+        location_id %in% loc_list,
+        # no col operations
+    ]
 
 # add first part of widened data set
 ca_tx_2000 <- setnames(
@@ -150,7 +153,7 @@ ca_tx_comp <- ca_tx_data_2000[
     on = .(location_id)
 ]
 
-# create differences data
+# create change data to fill map colors
 ca_tx_comp <- ca_tx_comp[
     , # no row opeartions
     `:=`(
@@ -264,10 +267,10 @@ figure_caption <- ggdraw() +
     draw_label(
         paste0(
             "Note: Values represent a sensitivity index cotton production to changes in domestic mill use.\n", 
-            "The numerator is the change in each county's share of domestic cotton production for pima in California and upland in Texas in thousands of bales between the years 2020 and 2000.\n", 
-            "The denominator is the change in mill usage in thousands of bales of pima cotton for the California index values and upland cotton for the Texas index values between the years 2020 and 2000.\n",
+            "The numerator is the percent change in each county's share of domestic cotton production. for pima in California and upland in Texas in thousands of bales between the years 2020 and 2000.\n", 
+            "The denominator is the percent change in mill usage in thousands of bales of cotton. For the California index values pima cotton is used and upland cotton is used for the Texas index values.\n",
             "Sources: USDA Economic Research Service (ERS) Cotton and Wool Outlook Reports.\n",
-            "AI Disclaimer: Lorin used generative AI to translate tmap code to ggplot2 code."
+            "AI Disclaimer: Lorin used generative AI to translate tmap code to ggplot2 code and match styling."
         ),
         x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, size = 8, lineheight = 1.2, color = "black"
     )
