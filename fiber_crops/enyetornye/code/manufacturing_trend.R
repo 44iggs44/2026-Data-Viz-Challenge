@@ -1,5 +1,33 @@
 
 
+
+# ==============================================================================
+# Visualization 2: Textile Trade and Regional Manufacturing Trends
+#
+# Purpose:
+# This script compares national textile output, imports, and cotton-equivalent
+# imports with regional textile employment and establishment trends.
+#
+# Main inputs:
+# 1. cttn_mftr.csv
+#    Cleaned BLS QCEW textile manufacturing data.
+# 2. textile_output_imports_dollars.csv
+#    National textile output and import values.
+# 3. Table1_US_textile_imports_by_fiber.xlsx
+#    USDA ERS textile imports measured by fiber weight.
+# 4. cotton_harmonized.csv
+#    Clean cotton-production data used for the report calculations.
+#
+# Output:
+# trade_activity_combined.png
+#
+# All indexed series use 1997 as the reference year, where 1997 = 100.
+# One statistical cotton bale is defined as 480 pounds.
+# ==============================================================================
+
+
+
+# Load packages
 library(data.table)
 library(dplyr)
 library(tidyr)
@@ -10,27 +38,56 @@ library(ggplot2)
 library(cowplot)
 library(scales)
 
-# Analysis settings
+# Set the reference year and cotton-bale conversion factor
 base_year <- 1997
 cotton_bale_weight_lb <- 480
 
+# Define the three cotton and textile regions
 region_levels <- c(
   "Southwest/West",
   "Delta/Mid-South",
   "Southeast/Textile Belt"
 )
 
+# Assign a consistent color to each region
 region_colors <- c(
   "Southwest/West" = "#D95F59",
   "Delta/Mid-South" = "#6A4C93",
   "Southeast/Textile Belt" = "#238B8E"
 )
 
+
+
 # Import QCEW manufacturing data
+
+# Create a temporary directory for the extracted CSV
+# this is to help with the comprised data that is > 100mb
+
+# Locate the compressed manufacturing dataset
+manufacturing_zip <- here(
+  "fiber_crops",
+  "enyetornye",
+  "data",
+  "cttn_mftr.csv.zip"
+)
+
+# Create a temporary directory for the extracted CSV
+manufacturing_temp_dir <- file.path(
+  tempdir(),
+  "cttn_mftr"
+)
+
+
+# Extract the CSV from the ZIP file
+unzip(
+  manufacturing_zip,
+  exdir = manufacturing_temp_dir
+)
+
+# Import the extracted manufacturing dataset
 manufacturing <- fread(
-  here(
-    "cotton_data",
-    "refined",
+  file = file.path(
+    manufacturing_temp_dir,
     "cttn_mftr.csv"
   )
 )
@@ -168,11 +225,18 @@ regional_activity <- manufacturing_textile %>%
     )
   )
 
+
+# Import textile output and import values
+data_dir <- here(
+  "fiber_crops",
+  "enyetornye",
+  "data"
+)
+
 # Import textile output and import values
 output_import <- fread(
-  here(
-    "cotton_data",
-    "textile_industry_output_import",
+  file = file.path(
+    data_dir,
     "textile_output_imports_dollars.csv"
   )
 ) %>%
@@ -220,11 +284,10 @@ output_import <- fread(
     )
   )
 
-# Import cotton raw-fiber-equivalent data
+# Import USDA ERS cotton raw-fiber-equivalent data
 fiber_raw <- read_excel(
-  here(
-    "cotton_data",
-    "textile_industry_output_import",
+  file.path(
+    data_dir,
     "Table1_US_textile_imports_by_fiber.xlsx"
   ),
   sheet = "table 1",
@@ -252,7 +315,7 @@ fiber_years <- as.integer(
 
 fiber_year_columns <- which(valid_years) + 2
 
-# Identify final data row
+# Exclude spreadsheet notes appearing below the final data row
 note_row <- which(
   str_detect(
     as.character(
@@ -696,8 +759,19 @@ trade_activity_combined <- plot_grid(
 
 trade_activity_combined
 
+#figures dir
+figures_dir <- here(
+  "fiber_crops",
+  "enyetornye",
+  "figures"
+)
+
+#save figures
 ggsave(
-  filename = "trade_activity_combined.png",
+  filename = file.path(
+    figures_dir,
+    "trade_activity_combined.png"
+  ),
   plot = trade_activity_combined,
   width = 15,
   height = 8.5,
@@ -715,11 +789,10 @@ cotton_import_2025 <- fiber_equivalent %>%
 
 cotton_import_2025
 
-# Load clean cotton production data
+# Import the cleaned cotton production dataset
 cotton <- fread(
-  here(
-    "cotton_data",
-    "refined",
+  file = file.path(
+    data_dir,
     "cotton_harmonized.csv"
   )
 )

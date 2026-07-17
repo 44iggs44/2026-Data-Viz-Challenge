@@ -38,7 +38,7 @@ After obtaining API key save a copy in usda_api.txt or input directly into the f
 
 What it contains: County level cotton production data in acres and bales.
 
-### *Textile Industry Output Data*
+### *Textile Industry Output and Import Data*
 
 General imports (nominal dollars): USITC DataWeb
 
