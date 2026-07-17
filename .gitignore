@@ -21,3 +21,6 @@ cover.png
 /data_documents/
 /data_final/
 *.Rproj
+*.png
+*.csv
+*.xlsx
