@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software or products please cit it as below."
+authors:
+ - family-names: "Enyetornye"
+   given_names: "Freedom"
+ - family-names: "Ikeme"
+   given-names: "Sionegael"
+ - family-names: "Rudin-Rush"
+   given-names: "Lorin"
+title: "2026-Data-Viz-Challenge_fiber_group"
+version: "1.0.0"
+date-released: "2026-07-17"
+url: "https://github.com/44iggs44/2026-Data-Viz-Challenge"

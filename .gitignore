@@ -21,3 +21,15 @@ cover.png
 /data_documents/
 /data_final/
 *.Rproj
+
+# Locally generated manufacturing files
+fiber_crops/enyetornye/data/raw/
+*.png
+*.csv
+*.xlsx
+fiber_crops/enyetornye/data/cttn_mftr.csv.zip
+fiber_crops/enyetornye/data/cttn_mftr.csv.zip
+/fiber_crops/enyetornye
+fiber_crops/enyetornye/data/cttn_mftr.csv.zip
+/fiber_crops/.enyetornye
+fiber_crops/.enyetornye/data/cttn_mftr.csv.zip
