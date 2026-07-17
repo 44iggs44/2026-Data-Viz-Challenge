@@ -240,4 +240,9 @@ I could not get these to work, I assume it was user error.
 **Sionegael Ikeme:**
 AI assistance was used in developing the code. Claude was used to fix lines of code that were causing errors, and to test API calls for downloading data directly from ERS, which was then rewritten to fit the context of the code.
 
+**Freedom Enyetornye:** 
+AI was used to fix some lines of code in downloading the manufacturing data.
+
+
+
 
