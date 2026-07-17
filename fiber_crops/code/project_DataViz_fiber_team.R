@@ -31,9 +31,10 @@
 # list of packages
 packages <- c(
     "arrow", "assertthat", "Cairo", "countrycode" ,"cowplot" , "data.table",
-    "did2s", "dplyr", "fixest", "fst", "ggplot2", "haven", "here", "lubridate",
-    "maps", "patchwork", "RColorBrewer", "readr", "readxl" ,"rnassqs", "scales",
-    "sf", "stringi","stringr", "tidyverse", "tigris", "tmap", "vroom"
+    "did2s", "dplyr", "fixest", "fst", "ggplot2", "haven", "here", "httr", 
+    "jsonlite", "lubridate", "maps", "patchwork", "RColorBrewer", "purrr",
+    "readr", "readxl" ,"rnassqs", "scales", "sf", "stringi","stringr",
+    "tidyverse", "tigris", "tmap", "vroom"
 )
 
 # check for missing packages 
@@ -81,6 +82,55 @@ if (!dir.exists(raw)) {
     message("Already exists")
 }
 
+if (!dir.exists(api_input)) {
+    
+    #vector of allowed responses
+    allowed <- c("y", "n")
+    
+    repeat{
+        
+    # prompt user about usda api code
+    ans <- tolower( # response remains lower case
+        readline(
+            prompt = "Do you have an API to access NASS's Quick Stats? (y/n): "
+        )
+    )
+    
+        # check for valid choice
+        if (ans %in% allowed) {
+        
+            # moves on when answer is y
+            if (ans == "y") {
+            
+                # create directory
+                dir.create(api_input, recursive = TRUE)
+                # ask to input api
+                api <- toString(
+                    readline(
+                        prompt = "Please input api: "
+                    )
+                )
+            
+            # check if valid api  (ASSUMES APIs are all 36 characters including dashes)
+            if ( nchar(api) == 36) {
+                
+                # create file and folder path
+                writeLines(api, con = file.path(api_input, "usda_api.txt"))
+                break
+            } else { 
+                message("Please input valid api (may involve changing code around lines 114 in project~.R)")
+            }
+            } else {
+                # stops and sets message
+                stop("Please get api and save to file in new folder as follows ./api_input/usda_api.txt folder")
+        } 
+    } else {
+        cat("Invalid entry please type 'y' or 'n'. \n")
+    }
+    }
+    
+}
+
 if (!dir.exists(manufacturing)) {
     dir.create(manufacturing, recursive = TRUE)
 } else {
@@ -119,45 +169,43 @@ if (!dir.exists(file.path(cotton, "nass"))) {
 }
 
 
-
 ########################################################################
 # - 1 run files that download data
 ########################################################################
 
 # checks for cleaned manufacturing csv, !exist then downloads data
-if (!file.exists(file.path(refined, "  manufacturing","fiber_manufacturing_all.csv"))) { 
+if (!file.exists(file.path(refined, "manufacturing","fiber_manufacturing_all.csv"))) { 
     
     #create valid answer
-    allowed <- c("yes", "no", "y", "n")
+    allowed <- c("y", "n")
     
     # loop to get correct response
     repeat {
     # prompt due to time and data it takes to download
-    ans <- tolower(readline(prompt = "Data takes a long time to download and is many gigabytes. Do you want to proceed (yes/no): "))
-    
-    # check for valid choice
-    if (ans %in% allowed) {
-        break
-    }
-    
+        ans <- tolower(
+            readline(
+                prompt = "Data takes a long time to download and is many gigabytes. Do you want to proceed (y/n): "
+            )
+        )
+        # check for valid choice
+        if (ans %in% allowed) {
+            
+            # Executes download when answer is "y"
+            if (ans == "y") {
+            
+            # NOTE files are very large download at risk this code for easy reproducibility
+                source(file.path(code, "enyetornye", "manufacturing_data_download.R"))
+            } else {
+                warning( "Download skipped missing files may cause code to stop. See README")
+        }
+            break # 
+        }
     # error message
-    cat("Invalid entry, please type 'yes' 'no' 'y' or 'n'.\n")
+        cat("Invalid entry, please type 'y' or 'n'.\n")
     }
-    
-    if (ans %in% c("yes", "y")) {
-    # NOTE files are very large download at risk this code for easy reproducibility
-    source(file.path(code, "enyetornye", "manufacturing_data_download.R"))
-    } else {
-        #presents warning but allows code to continue
-        warning("Download skipped, errors may cause code to stop", call. = FALSE)
-    }
-    
 } else {
     message("Files unneeded or skipped")
 }
-
-# move on after warning
-options(warn = old_warn_setting)
 
 # print continuing script acknowledgement
 print("Script continues...")
@@ -226,8 +274,21 @@ if (!dir.exists(file.path(refined, "cotton"))) {
     
 } else {
     
-    message("Files already exist")
+    message("Files already exist, please check file names")
     
+}
+
+if (!file.exists(
+    file.path(
+        refined,
+        "textile_industr_output_import",
+        "textile_output_imports_dollars.csv"
+        )
+    )
+) {
+    source(file.path(code, "ikeme", "output_import_textile.R"))
+} else  {
+    message("File already exists please check file names")
 }
 
 # check for production use file for map data
@@ -243,17 +304,11 @@ if (!file.exists(file.path(refined, "cotton_prod_use.csv"))) {
 ########################################################################
 
 # check for existence of figure file if doesn't exist run file
-if (!file.exists(file.path(fig, "trade_activity_combined.png"))) {
-    source(file.path(code, "enyetornye", "manufacturing_trend.R"))
-} else {
-    message("File already exists")
-}
+source(file.path(code, "enyetornye", "manufacturing_trend_2.R"))
 
 # check for existence of map
-if (!file.exists(file.path(fig, "pma_cali_ELS_chg_area.png"))) {
-    source(file.path(code, "rudinrush", "maps_code_n.R"))
-} else {
-    message("File already exists")
-}
+source(file.path(code, "rudinrush", "maps_code_n.R"))
 
+
+## END ##
 

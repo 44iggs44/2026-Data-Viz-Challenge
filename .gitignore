@@ -24,5 +24,6 @@ cover.png
 
 # Locally generated manufacturing files
 fiber_crops/enyetornye/data/raw/
-fiber_crops/enyetornye/data/fiber_manufacturing_all.csv
-fiber_crops/enyetornye/data/cttn_mftr.csv
+*.png
+*.csv
+*.xlsx
