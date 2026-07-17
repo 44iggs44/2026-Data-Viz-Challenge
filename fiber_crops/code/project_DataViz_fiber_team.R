@@ -125,39 +125,38 @@ if (!dir.exists(file.path(cotton, "nass"))) {
 ########################################################################
 
 # checks for cleaned manufacturing csv, !exist then downloads data
-if (!file.exists(file.path(refined, "  manufacturing","fiber_manufacturing_all.csv"))) { 
+if (!file.exists(file.path(refined, "manufacturing","fiber_manufacturing_all.csv"))) { 
     
     #create valid answer
-    allowed <- c("yes", "no", "y", "n")
+    allowed <- c("y", "n")
     
     # loop to get correct response
     repeat {
     # prompt due to time and data it takes to download
-    ans <- tolower(readline(prompt = "Data takes a long time to download and is many gigabytes. Do you want to proceed (yes/no): "))
-    
-    # check for valid choice
-    if (ans %in% allowed) {
-        break
-    }
+        ans <- tolower(readline(prompt = "Data takes a long time to download and is many gigabytes. Do you want to proceed (y/n): "))
+        # check for valid choice
+        if (ans %in% allowed) {
+            
+            # Executes download when answer is "y"
+            if (ans == "y") {
+            
+            # NOTE files are very large download at risk this code for easy reproducibility
+                source(file.path(code, "enyetornye", "manufacturing_data_download.R"))
+            } else {
+                warning( "Download skipped missing files may cause code to stop. See README")
+        }
+            break # 
+        }
     
     # error message
-    cat("Invalid entry, please type 'yes' 'no' 'y' or 'n'.\n")
+        cat("Invalid entry, please type 'y' or 'n'.\n")
     }
     
-    if (ans %in% c("yes", "y")) {
-    # NOTE files are very large download at risk this code for easy reproducibility
-    source(file.path(code, "enyetornye", "manufacturing_data_download.R"))
-    } else {
-        #presents warning but allows code to continue
-        warning("Download skipped, errors may cause code to stop", call. = FALSE)
-    }
+
     
 } else {
     message("Files unneeded or skipped")
 }
-
-# move on after warning
-options(warn = old_warn_setting)
 
 # print continuing script acknowledgement
 print("Script continues...")
@@ -244,7 +243,7 @@ if (!file.exists(file.path(refined, "cotton_prod_use.csv"))) {
 
 # check for existence of figure file if doesn't exist run file
 if (!file.exists(file.path(fig, "trade_activity_combined.png"))) {
-    source(file.path(code, "enyetornye", "manufacturing_trend.R"))
+    source(file.path(code, "enyetornye", "manufacturing_trend_2.R"))
 } else {
     message("File already exists")
 }
