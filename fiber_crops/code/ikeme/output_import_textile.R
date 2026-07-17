@@ -64,11 +64,11 @@ write_csv(output, file = file.path(refined, "textile_industry_output_import/text
 library(readxl)
 imports_raw <- read_excel(path = file.path(refined, "textile_industry_output_import/dataweb_textile_imports.xlsx"), 
                                       sheet = "General Customs Value")
-names(imports_raw)  # <- your exported file
+names(imports_raw)  # <- exported file from the website
 imports_raw <- imports_raw %>% filter(`NAIC Number` %in% c(313, 314, 315))
 
 
-# Rename to match: adjust these to the actual column headers in your export.
+# Rename to match output file
 imports <- imports_raw %>%
   rename(year = Year, naics = `NAIC Number`, imports_usd = `General Customs Value`) %>%
   mutate(naics = as.character(naics),
@@ -96,7 +96,7 @@ write_csv(combined, file = file.path(refined, "/textile_industry_output_import/t
 print(head(combined)); print(tail(combined))
 
 ###############################################################################
-# get plot for visualization:
+# get plot for quick visualization:
 
 library(ggplot2)
 library(scales)
