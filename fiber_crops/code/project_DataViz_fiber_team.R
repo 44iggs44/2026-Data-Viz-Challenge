@@ -82,7 +82,10 @@ if (!dir.exists(raw)) {
     message("Already exists")
 }
 
-if (!dir.exists(api_input)) {
+if (!dir.exists(api_input) &
+    # checks for last created file from harmonized cotton data which should exist
+    # if refined cotton data exists (likely found in zip file)
+    !file.exists(file.path(refined, "manufacturing", "cttn_mftr.csv"))) {
     
     #vector of allowed responses
     allowed <- c("y", "n")
@@ -303,7 +306,7 @@ if (!file.exists(file.path(refined, "cotton_prod_use.csv"))) {
 # - 3 run files that create figures 
 ########################################################################
 
-# check for existence of figure file if doesn't exist run file
+# run file
 source(file.path(code, "enyetornye", "manufacturing_trend_2.R"))
 
 # check for existence of map

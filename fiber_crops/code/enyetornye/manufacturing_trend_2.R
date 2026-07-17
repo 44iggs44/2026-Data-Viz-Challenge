@@ -228,16 +228,16 @@ regional_activity <- manufacturing_textile %>%
 
 
 # Import textile output and import values
-data_dir <- here(
-    "fiber_crops",
-    "enyetornye",
-    "data"
+data_dir <- file.path(
+    refined,
+    "textile_industry_output_import"
 )
 
 # Import textile output and import values
 output_import <- fread(
     file = file.path(
-        data_dir,
+        refined,
+        "textile_industry_output_import",
         "textile_output_imports_dollars.csv"
     )
 ) %>%

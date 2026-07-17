@@ -10,11 +10,14 @@ library(data.table)
 # manufacturing_data_download.R
 raw_dir <- file.path(
     ".",
-    ""
+    "fiber_crops",
+    "raw",
+    "manufacturing"
 )
 
 # Directory for the harmonized manufacturing dataset
-data_dir <- here(
+data_dir <- file.path(
+  ".",
   "fiber_crops",
   "refined",
   "manufacturing"

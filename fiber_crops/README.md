@@ -87,7 +87,6 @@ What it contains: Establishment counts and employment/wage data at the county or
 | | |___enyetornye
 | | |___ikeme
 | | |___project_DataViz_fiber_team.R
-| |___enyetornye
 | | |___code
 | | |___figures
 | | |___data
@@ -110,10 +109,6 @@ The folder structure should **now** look like this:
 | | |___enyetornye
 | | |___ikeme
 | | |___project_DataViz_fiber_team.R
-| |___enyetornye
-| | |___code
-| | |___figures
-| | |___data
 | |___README.md
 | |___figures
 | |___refined
@@ -149,10 +144,6 @@ The resulting folder structure should **now** look like this:
 | | |___enyetornye
 | | |___ikeme
 | | |___project_DataViz_fiber_team.R
-| |___enyetornye
-| | |___code
-| | |___figures
-| | |___data
 | |___README.md
 | |___figures
 | |___refined
@@ -233,14 +224,13 @@ output_import_textile.R: clean up data on textile naics 3 digits import and outp
 ## AI Disclaimer
 
 **Lorin Rudin-Rush:**
-LLM Usage: 
+Generative AI Usage Statement: 
 I used generative AI for coding assistance.
 Most of the time this was for quick debugging.
 When I found that I was spending a lot of time on an problem or task, I would submit code and error to either antigravity or through the github copilot via VSCode or even google search.
 When I was trying to get it to do larger tasks even with agentic models I ran into some issues.
 I do not use much generative AI in my day-to-day workflow and the lack of experience in prompts may have limited the effectiveness for certain tasks.
-On the other hand, after I created the state comparison maps in the R package tmap as a proof of concept.
-I was having difficulties quickly translating the tmap code to ggplot2 code.
+On the other hand, after I created the state comparison maps in the R package tmap as a proof of concept, I was having difficulties quickly translating the tmap code to ggplot2 code.
 I copy and pasted the tmap code into a basic google search and asked it to match the formatting and style of Freedom's map created in the file manufacturing_trend_2.R.
 Previous attempts at map translation can be seen in the old_code folder.
 These were experiments and I was trying to find code that I could cannibalize to better learn ggplot2.
