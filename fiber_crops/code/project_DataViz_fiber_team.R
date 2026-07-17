@@ -81,6 +81,56 @@ if (!dir.exists(raw)) {
     message("Already exists")
 }
 
+if (!dir.exists(api_input)) {
+    
+    #vector of allowed responses
+    allowed <- c("y", "n")
+    
+    repeat{
+        
+    # prompt user about usda api code
+    ans <- tolower( # response remains lower case
+        readline(
+            prompt = "Do you have an API to access NASS's Quick Stats? (y/n): "
+        )
+    )
+    
+    # check for valid choice
+    if (ans %in% allowed) {
+        
+        # moves on when answer is y
+        if (ans == "y") {
+            
+            # create directory
+            dir.create(api_input, recursive = TRUE)
+            # ask to input api
+            api < toString(
+                readline(
+                    prompt = "Please input api: "
+                )
+            )
+            
+            # check if valid api  (ASSUMES APIs are all 36 characters including dashes)
+            if ( nchar(api) == 36) {
+                
+                # create file and folder path
+                writeLines(api, con = file.path(api_input, "usda_api.txt"))
+            
+            } else { 
+                warning("Please input valid api (may involve changing code around lines 114 in project~.R)")
+                break
+            }
+        } else {
+            warning("Please get api and save to file in new folder as follows ./api_input/usda_api.txt folder")
+            break
+        } 
+    } else {
+        cat("Invalid entry please type 'y' or 'n'. \n")
+    }
+    }
+    
+}
+
 if (!dir.exists(manufacturing)) {
     dir.create(manufacturing, recursive = TRUE)
 } else {
@@ -119,7 +169,6 @@ if (!dir.exists(file.path(cotton, "nass"))) {
 }
 
 
-
 ########################################################################
 # - 1 run files that download data
 ########################################################################
@@ -133,7 +182,11 @@ if (!file.exists(file.path(refined, "manufacturing","fiber_manufacturing_all.csv
     # loop to get correct response
     repeat {
     # prompt due to time and data it takes to download
-        ans <- tolower(readline(prompt = "Data takes a long time to download and is many gigabytes. Do you want to proceed (y/n): "))
+        ans <- tolower(
+            readline(
+                prompt = "Data takes a long time to download and is many gigabytes. Do you want to proceed (y/n): "
+            )
+        )
         # check for valid choice
         if (ans %in% allowed) {
             
