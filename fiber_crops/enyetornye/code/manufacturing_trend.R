@@ -498,8 +498,12 @@ trade_fiber_plot <- ggplot() +
       face = "bold"
     ),
     plot.subtitle = element_text(
-      size = 9.5,
-      color = "grey35"
+      size = 12,
+      color = "black"
+    ),
+    axis.text = element_text(
+      size = 11,
+      color = "black"
     ),
     axis.title.y = element_text(
       size = 10,
@@ -513,7 +517,8 @@ trade_fiber_plot <- ggplot() +
     panel.grid.major.x = element_blank(),
     legend.position = "bottom",
     legend.text = element_text(
-      size = 8.5
+      size = 11,
+      color = "black"
     )
   )
 
@@ -588,8 +593,12 @@ regional_activity_plot <- ggplot(
       face = "bold"
     ),
     plot.subtitle = element_text(
-      size = 9.5,
-      color = "grey35"
+      size = 12,
+      color = "black"
+    ),
+    axis.text = element_text(
+      size = 11,
+      color = "black"
     ),
     axis.title.y = element_text(
       size = 10,
@@ -603,7 +612,8 @@ regional_activity_plot <- ggplot(
     panel.grid.major.x = element_blank(),
     legend.position = "bottom",
     legend.text = element_text(
-      size = 8.5
+      size = 11,
+      color = "black"
     )
   )
 
@@ -625,8 +635,8 @@ figure_title <- ggdraw() +
     x = 0.01,
     y = 0.25,
     hjust = 0,
-    size = 10.5,
-    color = "grey35"
+    size = 13,
+    color = "black"
   )
 
 
@@ -729,7 +739,7 @@ figure_caption <- ggdraw() +
     y = 0.5,
     hjust = 0.5,
     vjust = 0.5,
-    size = 7.9,
+    size = 9,
     lineheight = 1.2,
     color = "black"
   )
