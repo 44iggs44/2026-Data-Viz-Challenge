@@ -247,7 +247,7 @@ These were experiments and I was trying to find code that I could cannibalize to
 Using google antigravity and I believe codex/claude in github copilot, I got suggestions for code to build the map we agreed on.
 I could not get these to work, I assume it was user error.
 
-
-
+**Sionegael Ikeme:**
+AI assistance was used in developing the code. Claude was used to fix lines of code that were causing errors, and to test API calls for downloading data directly from ERS, which was then rewritten to fit the context of the code.
 
 
