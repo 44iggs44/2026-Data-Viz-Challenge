@@ -2,11 +2,12 @@
 # Created on: 16 July 2026
 # Created by: fe, si, lirr
 # Edited by: lirr
-# Last edit: 16 Jul 2026
+# z edit: 16 Jul 2026
 # R version 4.5.2
 
 # note: 
     # LLM was used for code assistance
+    # User interface with certain directories 
     # original dataset downloaded on: 16 July 2026
 
 # assumes:
@@ -23,6 +24,8 @@
 # - 0 Setup
 ########################################################################
 
+# install and call renv if 
+missing <- 
 
 ########################################################################
 # - 0 (a) Setup - packages
@@ -32,13 +35,13 @@
 packages <- c(
     "arrow", "assertthat", "Cairo", "countrycode" ,"cowplot" , "data.table",
     "did2s", "dplyr", "fixest", "fst", "ggplot2", "haven", "here", "httr", 
-    "jsonlite", "lubridate", "maps", "patchwork", "RColorBrewer", "purrr",
+    "jsonlite", "lubridate", "maps", "patchwork", "RColorBrewer", "renv" ,"purrr",
     "readr", "readxl" ,"rnassqs", "scales", "sf", "stringi","stringr",
-    "tidyverse", "tigris", "tmap", "vroom"
+    "tidyverse", "tigris", "tmap", "vroom", "yaml"
 )
 
 # check for missing packages 
-missing <- packages[!(packages %in% rownames(installed.packages()))]
+missing <- packages[!(packages %in% rownames(install.packages()))]
 
 # install missing packages
 if (length(missing)) install.packages(missing)
@@ -82,57 +85,75 @@ if (!dir.exists(raw)) {
     message("Already exists")
 }
 
-if (!dir.exists(api_input) &
-    # checks for last created file from harmonized cotton data which should exist
+if (!file.exists(file.path(refined, "manufacturing", "cttn_mftr.csv")) &&
+    !dir.exists(api_input)) {
+    # checks for last created file from raw in cotton_harmonization.R which should exist
     # if refined cotton data exists (likely found in zip file)
-    !file.exists(file.path(refined, "manufacturing", "cttn_mftr.csv"))) {
     
     #vector of allowed responses
     allowed <- c("y", "n")
     
-    repeat{
-        
+    repeat {
+    
     # prompt user about usda api code
     ans <- tolower( # response remains lower case
         readline(
-            prompt = "Do you have an API to access NASS's Quick Stats? (y/n): "
+            prompt = "Do you have an API for NASS's Quick Stats? (y/n): "
         )
     )
     
-        # check for valid choice
-        if (ans %in% allowed) {
+    # check for valid choice
+    if (ans %in% allowed) {
         
-            # moves on when answer is y
-            if (ans == "y") {
-            
-                # create directory
-                dir.create(api_input, recursive = TRUE)
-                # ask to input api
-                api <- toString(
-                    readline(
-                        prompt = "Please input api: "
+        # step when answer is "y"
+        if (ans == "y") {
+                # create variable to hold answ
+               answ <- tolower(
+                    readline( # prompt user about Api code and correct usage
+                        prompt = "Have you inputted your API code into the nassqs_auth() function in the nass_download.R? (y/n): "
                     )
-                )
-            
-            # check if valid api  (ASSUMES APIs are all 36 characters including dashes)
-            if ( nchar(api) == 36) {
-                
-                # create file and folder path
-                writeLines(api, con = file.path(api_input, "usda_api.txt"))
-                break
-            } else { 
-                message("Please input valid api (may involve changing code around lines 114 in project~.R)")
-            }
+               )
+               
+               if (answ %in% allowed) {
+                    # move on if answ is y
+                    if (answ == "y") {
+                        break 
+                    } else {
+                        
+                        # if api not in file already create directory
+                        dir.create(api_input, recursive = TRUE, showWarnings = FALSE)
+                        
+                        # ask to input api
+                        api <- toString(
+                            readline(
+                                prompt = "Please input api: "
+                            )
+                        )
+                        
+                        # check if valid api  (ASSUMES APIs are all 36 characters including dashes)
+                        if ( nchar(api) == 36) {
+                            # create file and folder path
+                            writeLines(api, con = file.path(api_input, "usda_api.txt"))
+                            break
+                        } else { 
+                            message("Please input valid api (may involve changing code around lines 114 in project~.R)")
+                            # loops back to beginning
+                        }
+                    }
+                } else {
+                    cat("Invalid entry please type 'y' or 'n'. \n")
+                }
             } else {
-                # stops and sets message
-                stop("Please get api and save to file in new folder as follows ./api_input/usda_api.txt folder")
+                # stops and sets message when answer n
+                stop("Please follow instructions in README.md and obtain api")
         } 
     } else {
         cat("Invalid entry please type 'y' or 'n'. \n")
     }
     }
-    
 }
+
+
 
 if (!dir.exists(manufacturing)) {
     dir.create(manufacturing, recursive = TRUE)

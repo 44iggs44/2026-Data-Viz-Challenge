@@ -33,3 +33,8 @@ fiber_crops/enyetornye/data/cttn_mftr.csv.zip
 fiber_crops/enyetornye/data/cttn_mftr.csv.zip
 /fiber_crops/.enyetornye
 fiber_crops/.enyetornye/data/cttn_mftr.csv.zip
+fiber_crops/README.html
+*.csv
+*.xlsx
+fiber_crops/.enyetornye/data/textile_output_imports_dollars.csv
+fiber_crops/.enyetornye/figures/trade_activity_combined.png

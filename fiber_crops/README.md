@@ -75,8 +75,12 @@ Data dictionary: (https://www.bls.gov/cew/about-data/downloadable-file-layouts/a
 What it contains: Establishment counts and employment/wage data at the county or state level, NAICS-classified, for 313, 314 and 315. Regions include Textile belt : "North Carolina", "South Carolina", "Georgia", "Alabama", "Virginia"
 
 ## To recreate the figures:
+Note: The repository should run download and clean all files after running ```source(project_DataViz_fiber_team.R)```.
+Downloading the manufacturing data takes up a lot of space and takes a long time to run.
+The authors' suggestion is to follow option 1 and use the cleaned files that are already downloaded and compressed.
 
-### First: Clone the repository and unzip the compressed file:
+
+### First: Clone the repository:
 
 **The folder structure should look like this:**
 ```text
@@ -92,6 +96,8 @@ What it contains: Establishment counts and employment/wage data at the county or
 | | |___figures
 | | |___data
 | |___README.md
+| |___renv
+| |___renv.lock
 ```
 
 ### Then there are two options:
@@ -123,6 +129,8 @@ The folder structure should **now** look like this:
 | | | |___nass
 | | |___textile_industry_output_import
 | | |___manufacturing
+| |___renv
+| |___renv.lock
 ```
 
 To get the latest version of the figures please open and run the file named: ```text project_DataViz_filber_team.R``` in the code folder.
@@ -159,6 +167,8 @@ The resulting folder structure should **now** look like this:
 | | | |___nass
 | | |___textile_industry_output_import
 | | |___manufacturing
+| |___renv
+| |___renv.lock
 ```
 
 
@@ -232,12 +242,9 @@ Generative AI Usage Statement:
 I used generative AI for coding assistance.
 Most of the time this was for quick debugging.
 When I found that I was spending a lot of time on an problem or task, I would submit code and error to either antigravity or through the github copilot via VSCode or even google search.
-When I was trying to get it to do larger tasks even with agentic models I ran into some issues.
-I do not use much generative AI in my day-to-day workflow and the lack of experience in prompts may have limited the effectiveness for certain tasks.
-On the other hand, after I created the state comparison maps in the R package tmap as a proof of concept, I was having difficulties quickly translating the tmap code to ggplot2 code.
+After I created the state comparison maps in the R package tmap as a proof of concept, I was having difficulties translating the tmap code to ggplot2 code.
 I copy and pasted the tmap code into a basic google search and asked it to match the formatting and style of Freedom's map created in the file manufacturing_trend_2.R.
 Previous attempts at map translation can be seen in the old_code folder.
-These were experiments and I was trying to find code that I could cannibalize to better learn ggplot2.
 Using google antigravity and I believe codex/claude in github copilot, I got suggestions for code to build the map we agreed on.
 I could not get these to work, I assume it was user error.
 
