@@ -75,9 +75,9 @@ Data dictionary: (https://www.bls.gov/cew/about-data/downloadable-file-layouts/a
 What it contains: Establishment counts and employment/wage data at the county or state level, NAICS-classified, for 313, 314 and 315. Regions include Textile belt : "North Carolina", "South Carolina", "Georgia", "Alabama", "Virginia"
 
 ## To recreate the figures:
-Note: The repository should run download and clean all files after running ```source(project_DataViz_fiber_team.R)```.
+<small>Note: The repository should run download and clean all files after running ```source(project_DataViz_fiber_team.R)```.
 Downloading the manufacturing data takes up a lot of space and takes a long time to run.
-The authors' suggestion is to follow option 1 and use the cleaned files that are already downloaded and compressed.
+The authors' suggestion is to follow option 1 and use the cleaned files that are already downloaded and compressed.</small>
 
 
 ### First: Clone the repository:
@@ -106,11 +106,13 @@ The authors' suggestion is to follow option 1 and use the cleaned files that are
 
 ##### Option 1.
 
-After opening the Archive.zip file there should be three folders labelled figures, raw, and refined.
+After opening the Archive.zip file move all folders in the Archive folder to the fiber_crops folder
 
 The folder structure should **now** look like this:
 ```text
 |___fiber_crops
+| |___Archive
+| |___Archive.zip
 | |___CITATION.cff
 | |___code
 | | |___rudinrush
